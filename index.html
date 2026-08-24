@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<meta name="theme-color" content="#5A0B14">
+<title>Word Search — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --maroon:#8C1220; --maroon-dk:#5A0B14; --red:#C4161C;
+  --orange:#F26522; --gold:#FBB03B; --gold-lt:#FFD166;
+  --cream:#F7F2E6; --paper:#FDFAF2;
+  --grey:#9A9691; --grey-dk:#6E6A66; --ink:#3A1410; --line:#E6DDCC;
+  --ok:#2E7D4F; --warn:#B8860B;
+  --display:'Anton','Arial Black',system-ui,sans-serif;
+  --body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+  --mono:'Roboto Mono',ui-monospace,Menlo,monospace;
+}
+*{box-sizing:border-box}
+[hidden]{display:none !important}
+body{margin:0;font-family:var(--body);background:var(--cream);color:var(--ink);
+  -webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
+a{color:var(--maroon)}
+
+.wrap{max-width:1140px;margin:0 auto;padding:16px 16px 60px}
+
+/* ---------- header ---------- */
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0 18px}
+.top h1{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;
+  font-size:clamp(24px,5vw,34px);margin:0;color:var(--maroon);line-height:1}
+.top h1 em{font-style:normal;color:var(--orange)}
+.top .sp{margin-left:auto}
+.whoami{font-size:12px;font-weight:700;color:var(--grey-dk)}
+.whoami b{color:var(--maroon)}
+
+/* ---------- cards ---------- */
+.card{background:var(--paper);border:1.5px solid var(--line);border-radius:16px;
+  padding:18px;margin-bottom:14px}
+.card.dark{background:var(--maroon);border-color:var(--maroon-dk);color:#fff}
+.card h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.05em;
+  font-size:15px;margin:0 0 14px;color:var(--maroon)}
+.card.dark h2{color:var(--gold-lt)}
+.eyebrow{font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
+  color:var(--orange);margin:0 0 8px}
+.muted{color:var(--grey-dk);font-size:13px;line-height:1.6}
+
+/* ---------- buttons ---------- */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  padding:12px 18px;border-radius:11px;font-family:var(--display);
+  letter-spacing:.1em;text-transform:uppercase;font-size:13px;
+  background:linear-gradient(96deg,var(--red),var(--orange));color:#fff;
+  box-shadow:0 3px 0 #8E1010;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 #8E1010}
+.btn.gold{background:linear-gradient(96deg,var(--gold),#F0951C);color:#3D2200;box-shadow:0 3px 0 #C9821F}
+.btn.gold:active{box-shadow:0 0 0 #C9821F}
+.btn.ghost{background:var(--cream);color:var(--maroon);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+.btn.ghost:active{box-shadow:0 0 0 var(--line)}
+.btn.sm{padding:8px 12px;font-size:11px}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.btn.full{width:100%}
+
+/* ---------- fields ---------- */
+.field{margin-bottom:13px}
+.field label{display:block;font-size:10px;font-weight:800;letter-spacing:.16em;
+  text-transform:uppercase;color:var(--grey-dk);margin-bottom:6px}
+.field input,.field select,.field textarea{width:100%;padding:12px 13px;border-radius:11px;
+  border:1.5px solid var(--line);background:var(--cream);font-weight:600}
+.field textarea{min-height:90px;resize:vertical;line-height:1.55}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange);background:#fff;outline:none}
+.msg{font-size:12px;font-weight:700;min-height:16px;margin:6px 0 0;color:var(--red)}
+.msg.ok{color:var(--ok)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:640px){.row2{grid-template-columns:1fr}}
+
+/* ---------- tabs ---------- */
+.tabs{display:flex;flex-wrap:wrap;gap:7px;margin-bottom:16px}
+.tab{padding:10px 15px;border-radius:11px;border:1.5px solid var(--line);
+  background:var(--paper);font-size:12px;font-weight:800;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--grey-dk)}
+.tab.on{background:var(--maroon);border-color:var(--maroon);color:#fff}
+
+/* ---------- stat tiles ---------- */
+.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px}
+.tile{background:var(--paper);border:1.5px solid var(--line);border-radius:14px;padding:14px}
+.tile b{display:block;font-family:var(--mono);font-size:26px;line-height:1.1;color:var(--maroon)}
+.tile span{display:block;font-size:9.5px;font-weight:800;letter-spacing:.14em;
+  text-transform:uppercase;color:var(--grey);margin-top:5px}
+.tile.hi{background:var(--maroon);border-color:var(--maroon-dk)}
+.tile.hi b{color:var(--gold-lt)}
+.tile.hi span{color:rgba(255,255,255,.72)}
+
+/* ---------- table ---------- */
+.tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table{width:100%;border-collapse:collapse;font-size:13px;min-width:520px}
+th{text-align:left;font-size:9.5px;font-weight:800;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--grey);padding:9px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+td{padding:11px 10px;border-bottom:1px dashed var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+td.num{font-family:var(--mono);font-weight:700}
+.pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--grey-dk)}
+.pill.good{background:#DCF0E4;color:var(--ok)}
+.pill.bad{background:#F7D9D9;color:var(--red)}
+.pill.warn{background:#FFF3D6;color:var(--warn)}
+
+/* ---------- bar chart ---------- */
+.chart{display:flex;align-items:flex-end;gap:3px;height:150px;padding-top:8px}
+.chart .bar{flex:1;min-width:4px;background:linear-gradient(180deg,var(--orange),var(--maroon));
+  border-radius:3px 3px 0 0;position:relative;min-height:2px}
+.chart .bar:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;
+  transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10px;
+  padding:4px 7px;border-radius:5px;white-space:nowrap;z-index:5;font-family:var(--mono)}
+.chartx{display:flex;justify-content:space-between;font-size:10px;color:var(--grey);
+  font-family:var(--mono);padding-top:6px}
+
+/* ---------- notification composer ---------- */
+.preview{background:#2B2B2E;color:#fff;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start}
+.preview .ic{width:38px;height:38px;border-radius:9px;background:linear-gradient(140deg,var(--gold),var(--orange));
+  flex:0 0 auto;display:grid;place-items:center;font-family:var(--display);color:#3D2200;font-size:16px}
+.preview .tx{min-width:0}
+.preview .tx b{display:block;font-size:14px;margin-bottom:3px;overflow-wrap:anywhere}
+.preview .tx p{margin:0;font-size:13px;line-height:1.45;color:rgba(255,255,255,.82);overflow-wrap:anywhere}
+.preview .tx small{display:block;margin-top:6px;font-size:11px;color:rgba(255,255,255,.5)}
+.reach{font-size:12.5px;font-weight:700;color:var(--maroon-dk);background:#FFF3D6;
+  border:1.5px solid var(--gold);border-radius:10px;padding:10px 12px;margin:12px 0}
+.counter{float:right;font-family:var(--mono);font-size:11px;color:var(--grey)}
+.counter.over{color:var(--red);font-weight:700}
+
+/* ---------- setup helper ---------- */
+.step{display:flex;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
+.step:last-child{border-bottom:0}
+.step i{flex:0 0 auto;width:24px;height:24px;border-radius:8px;background:var(--gold);
+  color:#3D2200;display:grid;place-items:center;font-style:normal;font-family:var(--mono);
+  font-size:11px;font-weight:700}
+.step div{min-width:0;font-size:13px;line-height:1.6}
+.step code,code.k{font-family:var(--mono);font-size:12px;background:var(--cream);
+  border:1px solid var(--line);border-radius:6px;padding:2px 6px;overflow-wrap:anywhere}
+.keyout{font-family:var(--mono);font-size:11.5px;background:var(--cream);border:1.5px solid var(--line);
+  border-radius:10px;padding:11px;overflow-wrap:anywhere;margin-top:8px;line-height:1.7}
+.keyout b{color:var(--maroon)}
+.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);
+  border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
+@keyframes sp{to{transform:rotate(360deg)}}
+.empty{font-size:13px;color:var(--grey);padding:16px 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <h1>Word<em>Search</em> Admin</h1>
+    <div class="sp"></div>
+    <div class="whoami" id="whoami" hidden>Signed in as <b id="whoName">—</b></div>
+    <button class="btn ghost sm" id="btnOut" type="button" hidden>Sign out</button>
+  </header>
+
+  <!-- ============ CONNECT ============ -->
+  <section id="scConnect">
+    <div class="card">
+      <p class="eyebrow">Step 1</p>
+      <h2>Connect to your project</h2>
+      <p class="muted" style="margin-bottom:14px">
+        These are stored in this browser only. Find them in Supabase under
+        <b>Project Settings → API Keys</b>. Use the <b>anon / publishable</b> key,
+        never the secret one.
+      </p>
+      <div class="field">
+        <label for="inUrl">Project URL</label>
+        <input id="inUrl" type="text" placeholder="https://xxxxxxxx.supabase.co" autocomplete="off">
+      </div>
+      <div class="field">
+        <label for="inKey">Anon public key</label>
+        <input id="inKey" type="text" placeholder="eyJhbGciOi..." autocomplete="off">
+      </div>
+      <p class="msg" id="mConnect"></p>
+      <button class="btn full" id="btnConnect" type="button">Save and continue</button>
+    </div>
+  </section>
+
+  <!-- ============ LOGIN ============ -->
+  <section id="scLogin" hidden>
+    <div class="card">
+      <p class="eyebrow">Step 2</p>
+      <h2>Admin sign in</h2>
+      <div class="field">
+        <label for="inUser">Admin username</label>
+        <input id="inUser" type="text" autocomplete="username">
+      </div>
+      <div class="field">
+        <label for="inPass">Password</label>
+        <input id="inPass" type="password" autocomplete="current-password">
+      </div>
+      <p class="msg" id="mLogin"></p>
+      <button class="btn full" id="btnIn" type="button">Sign in</button>
+      <p class="muted" style="margin-top:14px">
+        No account yet? Run this once in the Supabase SQL editor:<br>
+        <code class="k">select public.admin_upsert('yourname','a-long-password');</code>
+      </p>
+      <button class="btn ghost sm" id="btnBackConn" type="button" style="margin-top:12px">Change project</button>
+    </div>
+  </section>
+
+  <!-- ============ DASHBOARD ============ -->
+  <section id="scMain" hidden>
+    <div class="tabs">
+      <button class="tab on" data-pane="paneOverview" type="button">Overview</button>
+      <button class="tab" data-pane="paneTrends" type="button">Trends</button>
+      <button class="tab" data-pane="panePlayers" type="button">Players</button>
+      <button class="tab" data-pane="paneThemes" type="button">Themes</button>
+      <button class="tab" data-pane="paneNotify" type="button">Notifications</button>
+      <button class="tab" data-pane="paneSetup" type="button">Push setup</button>
+    </div>
+
+    <!-- ---- overview ---- -->
+    <div id="paneOverview">
+      <div class="card">
+        <h2>Today</h2>
+        <div class="tiles" id="tilesToday"></div>
+      </div>
+      <div class="card">
+        <h2>All time</h2>
+        <div class="tiles" id="tilesAll"></div>
+      </div>
+      <div class="card">
+        <h2>Top five today</h2>
+        <div class="tblwrap"><table id="tblTop"></table></div>
+      </div>
+      <div class="card">
+        <h2>Flagged as implausible</h2>
+        <p class="muted" style="margin-bottom:10px">Solves under 20 seconds. Worth a look before any prize is handed out.</p>
+        <div class="tblwrap"><table id="tblFlagged"></table></div>
+      </div>
+    </div>
+
+    <!-- ---- trends ---- -->
+    <div id="paneTrends" hidden>
+      <div class="card">
+        <h2>Games per day <span class="counter" id="trendRange"></span></h2>
+        <div class="chart" id="chartGames"></div>
+        <div class="chartx" id="chartGamesX"></div>
+      </div>
+      <div class="card">
+        <h2>New sign-ups per day</h2>
+        <div class="chart" id="chartSignups"></div>
+        <div class="chartx" id="chartSignupsX"></div>
+      </div>
+      <div class="card">
+        <h2>Day by day</h2>
+        <div class="tblwrap"><table id="tblDaily"></table></div>
+      </div>
+    </div>
+
+    <!-- ---- players ---- -->
+    <div id="panePlayers" hidden>
+      <div class="card">
+        <h2>Players</h2>
+        <div class="field" style="margin-bottom:10px">
+          <input id="inSearch" type="text" placeholder="Search by username…" autocomplete="off">
+        </div>
+        <div class="tblwrap"><table id="tblPlayers"></table></div>
+      </div>
+    </div>
+
+    <!-- ---- themes ---- -->
+    <div id="paneThemes" hidden>
+      <div class="card">
+        <h2>Theme difficulty</h2>
+        <p class="muted" style="margin-bottom:12px">
+          A low completion rate means that theme is too hard, or its words are too obscure.
+        </p>
+        <div class="tblwrap"><table id="tblThemes"></table></div>
+      </div>
+    </div>
+
+    <!-- ---- notifications ---- -->
+    <div id="paneNotify" hidden>
+      <div class="card">
+        <h2>Send a notification</h2>
+        <div class="row2">
+          <div class="field">
+            <label for="inAud">Who receives it</label>
+            <select id="inAud">
+              <option value="all">Everyone with notifications on</option>
+              <option value="one">One player</option>
+              <option value="played_today">Played today</option>
+              <option value="not_played_today">Has not played today</option>
+              <option value="streak_broken">Streak broken (no game in 48h)</option>
+              <option value="never_played">Registered but never played</option>
+            </select>
+          </div>
+          <div class="field" id="fTarget" hidden>
+            <label for="inTarget">Username</label>
+            <input id="inTarget" type="text" placeholder="Exact username" autocomplete="off">
+          </div>
+        </div>
+        <div class="field">
+          <label for="inTitle">Title <span class="counter" id="cTitle">0/80</span></label>
+          <input id="inTitle" type="text" maxlength="80" placeholder="Today's puzzle is live">
+        </div>
+        <div class="field">
+          <label for="inBody">Message <span class="counter" id="cBody">0/300</span></label>
+          <textarea id="inBody" maxlength="300" placeholder="Five names, five minutes. Can you beat yesterday, {name}?"></textarea>
+        </div>
+        <div class="field">
+          <label for="inUrlN">Link opened on tap</label>
+          <input id="inUrlN" type="text" placeholder="https://prasidhajagtap.github.io/puzzle_abg1/">
+        </div>
+        <p class="muted" style="margin:-4px 0 12px">
+          Write <code class="k">{name}</code> anywhere and it is replaced with each player's username.
+        </p>
+
+        <p class="eyebrow">Preview</p>
+        <div class="preview">
+          <div class="ic">WS</div>
+          <div class="tx">
+            <b id="pvTitle">Today's puzzle is live</b>
+            <p id="pvBody">Five names, five minutes.</p>
+            <small id="pvUrl">prasidhajagtap.github.io</small>
+          </div>
+        </div>
+
+        <div class="reach" id="reachNote" hidden></div>
+        <p class="msg" id="mNotify"></p>
+        <div class="row2" style="margin-top:6px">
+          <button class="btn ghost" id="btnReach" type="button">Check who it reaches</button>
+          <button class="btn" id="btnSend" type="button">Queue and send</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Sent history</h2>
+        <div class="tblwrap"><table id="tblNotif"></table></div>
+      </div>
+    </div>
+
+    <!-- ---- push setup ---- -->
+    <div id="paneSetup" hidden>
+      <div class="card">
+        <h2>Turn on Web Push — one time setup</h2>
+        <p class="muted" style="margin-bottom:6px">
+          Push messages must be signed with a VAPID key pair. Generate one here,
+          then paste both halves into Supabase. The private key never leaves this
+          page except into your own Supabase secrets.
+        </p>
+
+        <div class="step"><i>1</i><div>
+          <b>Generate your key pair</b><br>
+          <button class="btn gold sm" id="btnVapid" type="button" style="margin-top:8px">Generate VAPID keys</button>
+          <div class="keyout" id="vapidOut" hidden></div>
+        </div></div>
+
+        <div class="step"><i>2</i><div>
+          <b>Store them as Edge Function secrets</b><br>
+          In Supabase go to <b>Project Settings → Edge Functions → Secrets</b> and add:
+          <code class="k">VAPID_PUBLIC_KEY</code>, <code class="k">VAPID_PRIVATE_KEY</code> and
+          <code class="k">VAPID_SUBJECT</code> (use <code class="k">mailto:</code> and your email).
+        </div></div>
+
+        <div class="step"><i>3</i><div>
+          <b>Create the Edge Function</b><br>
+          Go to <b>Edge Functions → Deploy a new function → Via Editor</b>, name it
+          <code class="k">send-push</code>, paste the contents of
+          <code class="k">edge-function-send-push.ts</code>, and Deploy.
+          No CLI or Docker needed.
+        </div></div>
+
+        <div class="step"><i>4</i><div>
+          <b>Put the public key in the game</b><br>
+          Open <code class="k">index.html</code> and set
+          <code class="k">PUSH.publicKey</code> to the public key from step 1.
+          Players will then be asked whether they want notifications.
+        </div></div>
+
+        <div class="step"><i>5</i><div>
+          <b>Test it</b><br>
+          Allow notifications in the game yourself, then send a message to
+          <b>One player</b> — your own username.
+        </div></div>
+      </div>
+
+      <div class="card">
+        <h2>Connection</h2>
+        <p class="muted">Project: <code class="k" id="shownUrl">—</code></p>
+        <button class="btn ghost sm" id="btnForget" type="button" style="margin-top:10px">Forget this project on this device</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script>
+"use strict";
+
+/* ==========================================================
+   CONNECTION — kept in this browser only, never hard-coded
+   ========================================================== */
+const K_CONN="ws.admin.conn", K_TOK="ws.admin.tok";
+let CONN=load(K_CONN,null), TOKEN=load(K_TOK,null), ADMIN=null;
+
+function load(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v===null?d:v; }catch(e){ return d; } }
+function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+function drop(k){ try{ localStorage.removeItem(k); }catch(e){} }
+const $=id=>document.getElementById(id);
+const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+async function rpc(fn,body){
+  if(!CONN) throw new Error("Not connected");
+  const ac=("AbortController" in window)?new AbortController():null;
+  const bail=ac?setTimeout(()=>ac.abort(),15000):null;
+  let r;
+  try{
+    r=await fetch(CONN.url+"/rest/v1/rpc/"+fn,{
+      method:"POST",
+      headers:{"Content-Type":"application/json",apikey:CONN.key,
+               Authorization:"Bearer "+CONN.key},
+      body:JSON.stringify(body||{}),
+      signal:ac?ac.signal:undefined
+    });
+  } finally { if(bail) clearTimeout(bail); }
+  const text=await r.text();
+  if(!r.ok){
+    let detail=text;
+    try{ const j=JSON.parse(text); detail=j.message||j.hint||j.details||text; }catch(e){}
+    console.error("[admin] "+fn+" -> "+r.status+": "+detail);
+    const err=new Error(detail); err.status=r.status; throw err;
+  }
+  return text?JSON.parse(text):null;
+}
+
+function friendly(e){
+  const m=String(e&&e.message||"");
+  if(/Could not find the function|schema cache/i.test(m))
+    return "Database functions missing. Run admin-setup.sql in the SQL editor.";
+  if(e&&e.status===401) return "That anon key was rejected.";
+  if(e&&e.name==="AbortError") return "The server took too long.";
+  if(!e||!e.status) return "Cannot reach the project. Check the URL.";
+  return "Error "+e.status+". See the browser console.";
+}
+
+/* ==========================================================
+   SCREENS
+   ========================================================== */
+function showScreen(){
+  const conn=!!CONN, auth=!!TOKEN;
+  $("scConnect").hidden = conn;
+  $("scLogin").hidden   = !conn || auth;
+  $("scMain").hidden    = !auth;
+  $("whoami").hidden    = !auth;
+  $("btnOut").hidden    = !auth;
+  if(CONN) $("shownUrl").textContent=CONN.url;
+}
+
+$("btnConnect").addEventListener("click",()=>{
+  const url=$("inUrl").value.trim().replace(/\/+$/,"");
+  const key=$("inKey").value.trim();
+  if(!/^https:\/\/[a-z0-9-]+\.supabase\.co$/i.test(url)){
+    $("mConnect").textContent="That does not look like a Supabase project URL."; return;
+  }
+  if(key.length<40){ $("mConnect").textContent="That anon key looks too short."; return; }
+  if(/^sb_secret|service_role/i.test(key)){
+    $("mConnect").textContent="That is a secret key. Use the anon / publishable key."; return;
+  }
+  CONN={url,key}; save(K_CONN,CONN);
+  $("mConnect").textContent="";
+  showScreen();
+});
+$("btnBackConn").addEventListener("click",()=>{ CONN=null; drop(K_CONN); showScreen(); });
+$("btnForget").addEventListener("click",()=>{
+  if(!confirm("Forget the project URL and key on this device?")) return;
+  drop(K_CONN); drop(K_TOK); CONN=null; TOKEN=null; location.reload();
+});
+
+$("btnIn").addEventListener("click",async()=>{
+  const u=$("inUser").value.trim(), p=$("inPass").value;
+  if(!u||!p){ $("mLogin").textContent="Enter both fields."; return; }
+  const b=$("btnIn"); b.disabled=true; b.innerHTML='<span class="spin"></span> Checking';
+  try{
+    const res=await rpc("admin_login",{p_username:u,p_password:p});
+    if(!res.ok){
+      $("mLogin").textContent = res.error==="LOCKED"
+        ? "Too many wrong tries. Wait 15 minutes."
+        : (res.error==="BAD_CREDENTIALS"
+            ? "Wrong username or password. "+(res.left>0?res.left+" tries left.":"Next try locks it.")
+            : "Could not sign in.");
+      $("inPass").value="";
+    }else{
+      TOKEN=res.token; ADMIN=res.username;
+      save(K_TOK,TOKEN);
+      $("whoName").textContent=ADMIN;
+      $("mLogin").textContent="";
+      showScreen(); loadAll();
+    }
+  }catch(e){ $("mLogin").textContent=friendly(e); }
+  b.disabled=false; b.textContent="Sign in";
+});
+
+$("btnOut").addEventListener("click",()=>{ drop(K_TOK); TOKEN=null; location.reload(); });
+
+document.querySelectorAll(".tab").forEach(t=>{
+  t.addEventListener("click",()=>{
+    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
+    t.classList.add("on");
+    ["paneOverview","paneTrends","panePlayers","paneThemes","paneNotify","paneSetup"]
+      .forEach(id=>{ $(id).hidden = (id!==t.dataset.pane); });
+  });
+});
+
+/* ==========================================================
+   RENDER HELPERS
+   ========================================================== */
+function tiles(el,items){
+  el.innerHTML=items.map(i=>
+    '<div class="tile'+(i.hi?" hi":"")+'"><b>'+esc(i.v)+'</b><span>'+esc(i.l)+'</span></div>').join("");
+}
+function table(el,cols,rows,rowFn){
+  if(!rows||!rows.length){ el.outerHTML='<table id="'+el.id+'"></table>';
+    $(el.id).innerHTML='<tr><td class="empty">Nothing here yet.</td></tr>'; return; }
+  el.innerHTML='<thead><tr>'+cols.map(c=>'<th>'+esc(c)+'</th>').join("")+'</tr></thead>'+
+               '<tbody>'+rows.map(rowFn).join("")+'</tbody>';
+}
+const fmtT=s=>s==null?"—":String(Math.floor(s/60)).padStart(2,"0")+":"+String(s%60).padStart(2,"0");
+
+function drawChart(el,elx,rows,key){
+  if(!rows.length){ el.innerHTML=""; elx.innerHTML=""; return; }
+  const max=Math.max(1,...rows.map(r=>+r[key]||0));
+  el.innerHTML=rows.map(r=>{
+    const v=+r[key]||0;
+    return '<div class="bar" style="height:'+Math.max(2,Math.round(100*v/max))+'%" data-t="'+
+           esc(r.d)+": "+v+'"></div>';
+  }).join("");
+  elx.innerHTML='<span>'+esc(rows[0].d)+'</span><span>'+esc(rows[rows.length-1].d)+'</span>';
+}
+
+/* ==========================================================
+   DATA
+   ========================================================== */
+async function guard(res){
+  if(res && res.ok===false && res.error==="NO_SESSION"){
+    drop(K_TOK); TOKEN=null; showScreen();
+    $("mLogin").textContent="Your admin session expired. Sign in again.";
+    throw new Error("expired");
+  }
+  return res;
+}
+
+async function loadAll(){
+  try{
+    await Promise.all([loadOverview(),loadDaily(),loadPlayers(),loadThemes(),loadNotifs()]);
+  }catch(e){ if(String(e.message)!=="expired") console.error(e); }
+}
+
+async function loadOverview(){
+  const o=await guard(await rpc("admin_overview",{p_token:TOKEN}));
+  if(!o.ok) return;
+  tiles($("tilesToday"),[
+    {l:"Played today",     v:o.played_today, hi:true},
+    {l:"Solved today",     v:o.solved_today},
+    {l:"New sign-ups",     v:o.players_new_today},
+    {l:"Avg score today",  v:o.avg_score_today},
+    {l:"Avg time (solved)",v:fmtT(o.avg_time_today)}
+  ]);
+  tiles($("tilesAll"),[
+    {l:"Players",              v:o.players_total, hi:true},
+    {l:"Games played",         v:o.games_total},
+    {l:"Active last 7 days",   v:o.played_7d},
+    {l:"Completion rate 7d",   v:o.completion_rate+"%"},
+    {l:"Streak alive",         v:o.streak_alive},
+    {l:"Never played",         v:o.never_played},
+    {l:"Notifications on",     v:o.push_players},
+    {l:"Flagged scores",       v:o.flagged}
+  ]);
+  table($("tblTop"),["#","Player","Points","Time"],o.top_today||[],
+    (r,i)=>'<tr><td class="num">'+(i+1)+'</td><td>'+esc(r.username)+
+           '</td><td class="num">'+r.total_points+'</td><td class="num">'+fmtT(r.time_sec)+'</td></tr>');
+
+  const f=await guard(await rpc("admin_flagged",{p_token:TOKEN}));
+  table($("tblFlagged"),["Player","Date","Time","Points","Theme"],(f&&f.rows)||[],
+    r=>'<tr><td>'+esc(r.username)+'</td><td class="num">'+esc(r.play_date)+
+       '</td><td class="num">'+fmtT(r.time_sec)+'</td><td class="num">'+r.total_points+
+       '</td><td>'+esc(r.theme)+'</td></tr>');
+}
+
+async function loadDaily(){
+  const d=await guard(await rpc("admin_daily",{p_token:TOKEN,p_days:30}));
+  if(!d.ok) return;
+  const rows=d.rows||[];
+  $("trendRange").textContent="last "+rows.length+" days";
+  drawChart($("chartGames"),$("chartGamesX"),rows,"games");
+  drawChart($("chartSignups"),$("chartSignupsX"),rows,"signups");
+  table($("tblDaily"),["Date","Games","Solved","Avg points","Avg time","Sign-ups"],
+    rows.slice().reverse(),
+    r=>'<tr><td class="num">'+esc(r.d)+'</td><td class="num">'+r.games+
+       '</td><td class="num">'+r.solved+'</td><td class="num">'+r.avg_points+
+       '</td><td class="num">'+fmtT(r.avg_time)+'</td><td class="num">'+r.signups+'</td></tr>');
+}
+
+let searchT=null;
+$("inSearch").addEventListener("input",()=>{ clearTimeout(searchT); searchT=setTimeout(loadPlayers,300); });
+
+async function loadPlayers(){
+  const q=$("inSearch").value.trim();
+  const p=await guard(await rpc("admin_players",{p_token:TOKEN,p_search:q||null,p_limit:200}));
+  if(!p.ok) return;
+  table($("tblPlayers"),["Player","Joined","Games","Solved","Points","Best","Last played","Push"],
+    p.rows||[],
+    r=>'<tr><td><b>'+esc(r.username)+'</b></td><td class="num">'+esc(r.joined)+
+       '</td><td class="num">'+r.games+'</td><td class="num">'+r.solved+
+       '</td><td class="num">'+r.total_points+'</td><td class="num">'+fmtT(r.best_time)+
+       '</td><td class="num">'+esc(r.last_played||"—")+
+       '</td><td>'+(r.has_push?'<span class="pill good">on</span>':'<span class="pill">off</span>')+
+       '</td></tr>');
+}
+
+async function loadThemes(){
+  const t=await guard(await rpc("admin_themes",{p_token:TOKEN}));
+  if(!t.ok) return;
+  table($("tblThemes"),["Theme","Plays","Solved","Completion","Avg time"],t.rows||[],
+    r=>{
+      const cls=r.pct>=70?"good":(r.pct>=40?"warn":"bad");
+      return '<tr><td>'+esc(r.theme)+'</td><td class="num">'+r.plays+
+             '</td><td class="num">'+r.solved+'</td><td><span class="pill '+cls+'">'+r.pct+'%</span></td>'+
+             '<td class="num">'+fmtT(r.avg_time)+'</td></tr>';
+    });
+}
+
+async function loadNotifs(){
+  const n=await guard(await rpc("admin_notifications",{p_token:TOKEN,p_limit:50}));
+  if(!n.ok) return;
+  table($("tblNotif"),["Title","Audience","Status","Sent","Failed","When"],n.rows||[],
+    r=>{
+      const cls=r.status==="sent"?"good":(r.status==="failed"?"bad":"warn");
+      return '<tr><td><b>'+esc(r.title)+'</b><br><span class="muted">'+esc(r.body).slice(0,70)+'</span></td>'+
+             '<td>'+esc(r.audience)+(r.target_user?" → "+esc(r.target_user):"")+'</td>'+
+             '<td><span class="pill '+cls+'">'+esc(r.status)+'</span></td>'+
+             '<td class="num">'+r.sent_count+'</td><td class="num">'+r.fail_count+'</td>'+
+             '<td class="num">'+esc(String(r.sent_at||r.created_at).slice(0,16).replace("T"," "))+'</td></tr>';
+    });
+}
+
+/* ==========================================================
+   NOTIFICATION COMPOSER
+   ========================================================== */
+$("inAud").addEventListener("change",()=>{
+  $("fTarget").hidden = $("inAud").value!=="one";
+  $("reachNote").hidden=true;
+});
+function pv(){
+  const t=$("inTitle").value||"Title goes here";
+  const b=$("inBody").value||"Your message will appear here.";
+  $("pvTitle").textContent=t.replace(/\{name\}/g,"Pranaya");
+  $("pvBody").textContent=b.replace(/\{name\}/g,"Pranaya");
+  let u=$("inUrlN").value.trim();
+  try{ u=u?new URL(u).hostname:"your game"; }catch(e){}
+  $("pvUrl").textContent=u;
+  $("cTitle").textContent=$("inTitle").value.length+"/80";
+  $("cBody").textContent=$("inBody").value.length+"/300";
+  $("cTitle").classList.toggle("over",$("inTitle").value.length>=80);
+  $("cBody").classList.toggle("over",$("inBody").value.length>=300);
+}
+["inTitle","inBody","inUrlN"].forEach(id=>$(id).addEventListener("input",pv));
+
+$("btnReach").addEventListener("click",async()=>{
+  const aud=$("inAud").value, target=$("inTarget").value.trim();
+  if(aud==="one"&&!target){ $("mNotify").textContent="Enter the username."; return; }
+  $("mNotify").textContent="";
+  try{
+    // queue a throwaway to read the reach count, then leave it unsent
+    const res=await guard(await rpc("admin_queue_notification",{
+      p_token:TOKEN,p_title:"(reach check)",p_body:"(reach check)",
+      p_url:null,p_audience:aud,p_target:target||null}));
+    if(!res.ok){ $("mNotify").textContent=res.error; return; }
+    $("reachNote").hidden=false;
+    $("reachNote").textContent = res.reach===0
+      ? "Nobody in this group has notifications switched on yet."
+      : "This would reach "+res.reach+" device"+(res.reach===1?"":"s")+".";
+    loadNotifs();
+  }catch(e){ $("mNotify").textContent=friendly(e); }
+});
+
+$("btnSend").addEventListener("click",async()=>{
+  const title=$("inTitle").value.trim(), body=$("inBody").value.trim();
+  const aud=$("inAud").value, target=$("inTarget").value.trim();
+  const url=$("inUrlN").value.trim();
+  const m=$("mNotify"); m.className="msg";
+  if(!title||!body){ m.textContent="Title and message are both required."; return; }
+  if(aud==="one"&&!target){ m.textContent="Enter the username."; return; }
+  if(!confirm("Send this notification now?")) return;
+
+  const b=$("btnSend"); b.disabled=true; b.innerHTML='<span class="spin"></span> Sending';
+  try{
+    const q=await guard(await rpc("admin_queue_notification",{
+      p_token:TOKEN,p_title:title,p_body:body,p_url:url||null,
+      p_audience:aud,p_target:target||null}));
+    if(!q.ok){ m.textContent="Could not queue: "+q.error; }
+    else if(q.reach===0){ m.textContent="Queued, but nobody in this group has notifications on."; }
+    else{
+      const r=await fetch(CONN.url+"/functions/v1/send-push",{
+        method:"POST",
+        headers:{"Content-Type":"application/json",Authorization:"Bearer "+CONN.key,apikey:CONN.key},
+        body:JSON.stringify({admin_token:TOKEN,notification_id:q.id})
+      });
+      const out=await r.json().catch(()=>({}));
+      if(out.ok){ m.className="msg ok"; m.textContent="Sent to "+out.sent+" device"+(out.sent===1?"":"s")+
+          (out.failed?(", "+out.failed+" failed"):"")+(out.removed?(", "+out.removed+" stale removed"):"")+"."; }
+      else{ m.textContent="Queued, but sending failed: "+(out.error||("HTTP "+r.status))+
+            ". Check the send-push function is deployed and the VAPID secrets are set."; }
+    }
+    loadNotifs();
+  }catch(e){ m.textContent=friendly(e); }
+  b.disabled=false; b.textContent="Queue and send";
+});
+
+/* ==========================================================
+   VAPID KEY GENERATOR — runs entirely in this browser
+   ========================================================== */
+function b64url(buf){
+  const b=btoa(String.fromCharCode.apply(null,new Uint8Array(buf)));
+  return b.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
+}
+$("btnVapid").addEventListener("click",async()=>{
+  const out=$("vapidOut"); out.hidden=false; out.textContent="Generating…";
+  try{
+    const kp=await crypto.subtle.generateKey({name:"ECDSA",namedCurve:"P-256"},true,["sign","verify"]);
+    const pubRaw=await crypto.subtle.exportKey("raw",kp.publicKey);          // 65 bytes
+    const jwk=await crypto.subtle.exportKey("jwk",kp.privateKey);            // d = private
+    const pub=b64url(pubRaw), priv=jwk.d;
+    out.innerHTML='<b>VAPID_PUBLIC_KEY</b><br>'+esc(pub)+
+                  '<br><br><b>VAPID_PRIVATE_KEY</b><br>'+esc(priv)+
+                  '<br><br><b>VAPID_SUBJECT</b><br>mailto:your@email.com'+
+                  '<br><br><span style="color:#B8860B">Copy these now. Closing this page loses the private key, '+
+                  'and a new pair invalidates everyone who already allowed notifications.</span>';
+  }catch(e){
+    out.textContent="Your browser refused to generate keys: "+e.message;
+  }
+});
+
+/* ==========================================================
+   START
+   ========================================================== */
+pv();
+showScreen();
+if(TOKEN){
+  rpc("admin_overview",{p_token:TOKEN}).then(o=>{
+    if(o&&o.ok){ $("whoName").textContent="admin"; loadAll(); }
+    else { drop(K_TOK); TOKEN=null; showScreen(); }
+  }).catch(()=>{ drop(K_TOK); TOKEN=null; showScreen(); });
+}
+</script>
+</body>
+</html>
