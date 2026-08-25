@@ -120,37 +120,6 @@ td.num{font-family:var(--mono);font-weight:700}
 .chartx{display:flex;justify-content:space-between;font-size:10px;color:var(--grey);
   font-family:var(--mono);padding-top:6px}
 
-/* ---------- notification composer ---------- */
-.preview{background:#2B2B2E;color:#fff;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:flex-start}
-.preview .ic{width:38px;height:38px;border-radius:9px;background:linear-gradient(140deg,var(--gold),var(--orange));
-  flex:0 0 auto;display:grid;place-items:center;font-family:var(--display);color:#3D2200;font-size:16px}
-.preview .tx{min-width:0}
-.preview .tx b{display:block;font-size:14px;margin-bottom:3px;overflow-wrap:anywhere}
-.preview .tx p{margin:0;font-size:13px;line-height:1.45;color:rgba(255,255,255,.82);overflow-wrap:anywhere}
-.preview .tx small{display:block;margin-top:6px;font-size:11px;color:rgba(255,255,255,.5)}
-.reach{font-size:12.5px;font-weight:700;color:var(--maroon-dk);background:#FFF3D6;
-  border:1.5px solid var(--gold);border-radius:10px;padding:10px 12px;margin:12px 0}
-.counter{float:right;font-family:var(--mono);font-size:11px;color:var(--grey)}
-.counter.over{color:var(--red);font-weight:700}
-
-/* ---------- setup helper ---------- */
-.step{display:flex;gap:12px;padding:12px 0;border-bottom:1px dashed var(--line)}
-.step:last-child{border-bottom:0}
-.step i{flex:0 0 auto;width:24px;height:24px;border-radius:8px;background:var(--gold);
-  color:#3D2200;display:grid;place-items:center;font-style:normal;font-family:var(--mono);
-  font-size:11px;font-weight:700}
-.step div{min-width:0;font-size:13px;line-height:1.6}
-.step code,code.k{font-family:var(--mono);font-size:12px;background:var(--cream);
-  border:1px solid var(--line);border-radius:6px;padding:2px 6px;overflow-wrap:anywhere}
-.keyout{font-family:var(--mono);font-size:11.5px;background:var(--cream);border:1.5px solid var(--line);
-  border-radius:10px;padding:11px;overflow-wrap:anywhere;margin-top:8px;line-height:1.7}
-.keyout b{color:var(--maroon)}
-.warnrow{background:#FFF3D6;border:1.5px solid var(--gold);border-radius:9px;
-  padding:10px 12px;margin-top:9px;font-size:12.5px;line-height:1.55;color:#6B5410}
-.spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);
-  border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
-@keyframes sp{to{transform:rotate(360deg)}}
-.empty{font-size:13px;color:var(--grey);padding:16px 0}
 </style>
 </head>
 <body>
@@ -216,8 +185,7 @@ td.num{font-family:var(--mono);font-weight:700}
       <button class="tab" data-pane="paneTrends" type="button">Trends</button>
       <button class="tab" data-pane="panePlayers" type="button">Players</button>
       <button class="tab" data-pane="paneThemes" type="button">Themes</button>
-      <button class="tab" data-pane="paneNotify" type="button">Notifications</button>
-      <button class="tab" data-pane="paneSetup" type="button">Push setup</button>
+      <button class="tab" data-pane="paneSetup" type="button">Settings</button>
     </div>
 
     <!-- ---- overview ---- -->
@@ -281,156 +249,15 @@ td.num{font-family:var(--mono);font-weight:700}
       </div>
     </div>
 
-    <!-- ---- notifications ---- -->
-    <div id="paneNotify" hidden>
-      <div class="card">
-        <h2>Send a notification</h2>
-        <div class="row2">
-          <div class="field">
-            <label for="inAud">Who receives it</label>
-            <select id="inAud">
-              <option value="all">Everyone with notifications on</option>
-              <option value="one">One player</option>
-              <option value="played_today">Played today</option>
-              <option value="not_played_today">Has not played today</option>
-              <option value="streak_broken">Streak broken (no game in 48h)</option>
-              <option value="never_played">Registered but never played</option>
-            </select>
-          </div>
-          <div class="field" id="fTarget" hidden>
-            <label for="inTarget">Username</label>
-            <input id="inTarget" type="text" placeholder="Exact username" autocomplete="off">
-          </div>
-        </div>
-        <div class="field">
-          <label for="inTitle">Title <span class="counter" id="cTitle">0/80</span></label>
-          <input id="inTitle" type="text" maxlength="80" placeholder="Today's puzzle is live">
-        </div>
-        <div class="field">
-          <label for="inBody">Message <span class="counter" id="cBody">0/300</span></label>
-          <textarea id="inBody" maxlength="300" placeholder="Five names, five minutes. Can you beat yesterday, {name}?"></textarea>
-        </div>
-        <div class="field">
-          <label for="inUrlN">Link opened on tap</label>
-          <input id="inUrlN" type="text" placeholder="https://prasidhajagtap.github.io/puzzle_abg1/">
-        </div>
-        <p class="muted" style="margin:-4px 0 12px">
-          Write <code class="k">{name}</code> anywhere and it is replaced with each player's username.
-        </p>
-
-        <p class="eyebrow">Preview</p>
-        <div class="preview">
-          <div class="ic">WS</div>
-          <div class="tx">
-            <b id="pvTitle">Today's puzzle is live</b>
-            <p id="pvBody">Five names, five minutes.</p>
-            <small id="pvUrl">prasidhajagtap.github.io</small>
-          </div>
-        </div>
-
-        <div class="reach" id="reachNote" hidden></div>
-        <p class="msg" id="mNotify"></p>
-        <div class="row2" style="margin-top:6px">
-          <button class="btn ghost" id="btnReach" type="button">Check who it reaches</button>
-          <button class="btn" id="btnSend" type="button">Queue and send</button>
-        </div>
-      </div>
-
-      <div class="card">
-        <h2>Sent history</h2>
-        <div class="tblwrap"><table id="tblNotif"></table></div>
-      </div>
-    </div>
-
-    <!-- ---- push setup ---- -->
+    <!-- ---- settings ---- -->
     <div id="paneSetup" hidden>
       <div class="card">
-        <h2>Turn on Web Push — one time setup</h2>
-        <p class="muted" style="margin-bottom:6px">
-          Push messages must be signed with a VAPID key pair. Generate one here,
-          then paste both halves into Supabase. The private key never leaves this
-          page except into your own Supabase secrets.
-        </p>
-
-        <div class="step"><i>1</i><div>
-          <b>Generate your key pair</b><br>
-          <button class="btn gold sm" id="btnVapid" type="button" style="margin-top:8px">Generate VAPID keys</button>
-          <div class="keyout" id="vapidOut" hidden></div>
-        </div></div>
-
-        <div class="step"><i>2</i><div>
-          <b>Store them as Edge Function secrets</b><br>
-          In Supabase go to <b>Project Settings → Edge Functions → Secrets</b> and add:
-          <code class="k">VAPID_PUBLIC_KEY</code>, <code class="k">VAPID_PRIVATE_KEY</code> and
-          <code class="k">VAPID_SUBJECT</code> (use <code class="k">mailto:</code> and your email).
-        </div></div>
-
-        <div class="step"><i>3</i><div>
-          <b>Create the Edge Function</b><br>
-          Go to <b>Edge Functions → Deploy a new function → Via Editor</b>, name it
-          <code class="k">send-push</code>, paste the contents of
-          <code class="k">edge-function-send-push.ts</code>, and Deploy.
-          No CLI or Docker needed.
-          <div class="warnrow"><b>Then turn JWT Verification OFF</b> on
-          <b>send-push → Settings</b>. This is required, not optional: projects on the
-          2026 keys (<code class="k">sb_publishable_…</code>) cannot pass the platform
-          JWT check at all, because those keys are not JWTs. Leaving it on gives a
-          CORS or INVALID_CREDENTIALS error before your function ever runs.
-          The function verifies your admin token itself, so this is safe.</div>
-        </div></div>
-
-        <div class="step"><i>4</i><div>
-          <b>Put the public key in the game</b><br>
-          Open <code class="k">index.html</code> and set
-          <code class="k">PUSH.publicKey</code> to the public key from step 1.
-          Players will then be asked whether they want notifications.
-        </div></div>
-
-        <div class="step"><i>5</i><div>
-          <b>Check the function is alive</b><br>
-          This proves the secrets loaded and the keys import correctly.
-          It sends nothing to anyone.<br>
-          <button class="btn ghost sm" id="btnSelfTest" type="button" style="margin-top:8px">Run self-test</button>
-          <div class="keyout" id="selfOut" hidden></div>
-        </div></div>
-
-        <div class="step"><i>6</i><div>
-          <b>Send yourself a real one</b><br>
-          Allow notifications in the game, then send to <b>One player</b> using
-          your own username.
-        </div></div>
-      </div>
-
-      <div class="card">
-        <h2>Send from the server (recommended)</h2>
-        <p class="muted" style="margin-bottom:12px">
-          Calling the function from this page goes through the browser, the CORS
-          preflight and the platform key check &mdash; which fails on projects using
-          the 2026 <code class="k">sb_publishable_</code> keys. Store the details below
-          and the database calls the function itself instead: server to server, no
-          browser involved. This is the reliable path.
-        </p>
-        <div class="field">
-          <label for="inFnUrl">Function URL</label>
-          <input id="inFnUrl" type="text" placeholder="https://xxxx.supabase.co/functions/v1/send-push" autocomplete="off">
-        </div>
-        <div class="field">
-          <label for="inSvcKey">Service role / secret key</label>
-          <input id="inSvcKey" type="password" placeholder="sb_secret_... or eyJ..." autocomplete="off">
-          <p class="msg hint">Project Settings &rarr; API Keys. This is stored in your own database,
-            readable only by these admin functions &mdash; never sent to the browser again.</p>
-        </div>
-        <p class="msg" id="mCfg"></p>
-        <button class="btn gold" id="btnSaveCfg" type="button">Save and use server sending</button>
-        <div class="keyout" id="cfgOut" hidden></div>
-      </div>
-
-      <div class="card">
         <h2>Connection</h2>
-        <p class="muted">Project: <code class="k" id="shownUrl">—</code></p>
+        <p class="muted">Project: <code class="k" id="shownUrl">&mdash;</code></p>
         <button class="btn ghost sm" id="btnForget" type="button" style="margin-top:10px">Forget this project on this device</button>
       </div>
     </div>
+
   </section>
 </div>
 
@@ -559,7 +386,7 @@ document.querySelectorAll(".tab").forEach(t=>{
   t.addEventListener("click",()=>{
     document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
     t.classList.add("on");
-    ["paneOverview","paneTrends","panePlayers","paneThemes","paneNotify","paneSetup"]
+    ["paneOverview","paneTrends","panePlayers","paneThemes","paneSetup"]
       .forEach(id=>{ $(id).hidden = (id!==t.dataset.pane); });
   });
 });
@@ -604,7 +431,7 @@ async function guard(res){
 
 async function loadAll(){
   try{
-    await Promise.all([loadOverview(),loadDaily(),loadPlayers(),loadThemes(),loadNotifs()]);
+    await Promise.all([loadOverview(),loadDaily(),loadPlayers(),loadThemes()]);
   }catch(e){ if(String(e.message)!=="expired") console.error(e); }
 }
 
@@ -625,7 +452,6 @@ async function loadOverview(){
     {l:"Completion rate 7d",   v:o.completion_rate+"%"},
     {l:"Streak alive",         v:o.streak_alive},
     {l:"Never played",         v:o.never_played},
-    {l:"Notifications on",     v:o.push_players},
     {l:"Flagged scores",       v:o.flagged}
   ]);
   table($("tblTop"),["#","Player","Points","Time"],o.top_today||[],
@@ -660,13 +486,12 @@ async function loadPlayers(){
   const q=$("inSearch").value.trim();
   const p=await guard(await rpc("admin_players",{p_token:TOKEN,p_search:q||null,p_limit:200}));
   if(!p.ok) return;
-  table($("tblPlayers"),["Player","Joined","Games","Solved","Points","Best","Last played","Push"],
+  table($("tblPlayers"),["Player","Joined","Games","Solved","Points","Best","Last played"],
     p.rows||[],
     r=>'<tr><td><b>'+esc(r.username)+'</b></td><td class="num">'+esc(r.joined)+
        '</td><td class="num">'+r.games+'</td><td class="num">'+r.solved+
        '</td><td class="num">'+r.total_points+'</td><td class="num">'+fmtT(r.best_time)+
        '</td><td class="num">'+esc(r.last_played||"—")+
-       '</td><td>'+(r.has_push?'<span class="pill good">on</span>':'<span class="pill">off</span>')+
        '</td></tr>');
 }
 
@@ -682,238 +507,9 @@ async function loadThemes(){
     });
 }
 
-async function loadNotifs(){
-  const n=await guard(await rpc("admin_notifications",{p_token:TOKEN,p_limit:50}));
-  if(!n.ok) return;
-  table($("tblNotif"),["Title","Audience","Status","Sent","Failed","When"],n.rows||[],
-    r=>{
-      const cls=r.status==="sent"?"good":(r.status==="failed"?"bad":"warn");
-      return '<tr><td><b>'+esc(r.title)+'</b><br><span class="muted">'+esc(r.body).slice(0,70)+'</span></td>'+
-             '<td>'+esc(r.audience)+(r.target_user?" → "+esc(r.target_user):"")+'</td>'+
-             '<td><span class="pill '+cls+'">'+esc(r.status)+'</span></td>'+
-             '<td class="num">'+r.sent_count+'</td><td class="num">'+r.fail_count+'</td>'+
-             '<td class="num">'+esc(String(r.sent_at||r.created_at).slice(0,16).replace("T"," "))+'</td></tr>';
-    });
-}
-
-/* ==========================================================
-   NOTIFICATION COMPOSER
-   ========================================================== */
-$("inAud").addEventListener("change",()=>{
-  $("fTarget").hidden = $("inAud").value!=="one";
-  $("reachNote").hidden=true;
-});
-function pv(){
-  const t=$("inTitle").value||"Title goes here";
-  const b=$("inBody").value||"Your message will appear here.";
-  $("pvTitle").textContent=t.replace(/\{name\}/g,"Pranaya");
-  $("pvBody").textContent=b.replace(/\{name\}/g,"Pranaya");
-  let u=$("inUrlN").value.trim();
-  try{ u=u?new URL(u).hostname:"your game"; }catch(e){}
-  $("pvUrl").textContent=u;
-  $("cTitle").textContent=$("inTitle").value.length+"/80";
-  $("cBody").textContent=$("inBody").value.length+"/300";
-  $("cTitle").classList.toggle("over",$("inTitle").value.length>=80);
-  $("cBody").classList.toggle("over",$("inBody").value.length>=300);
-}
-["inTitle","inBody","inUrlN"].forEach(id=>$(id).addEventListener("input",pv));
-
-$("btnReach").addEventListener("click",async()=>{
-  const aud=$("inAud").value, target=$("inTarget").value.trim();
-  if(aud==="one"&&!target){ $("mNotify").textContent="Enter the username."; return; }
-  $("mNotify").textContent="";
-  try{
-    // queue a throwaway to read the reach count, then leave it unsent
-    const res=await guard(await rpc("admin_queue_notification",{
-      p_token:TOKEN,p_title:"(reach check)",p_body:"(reach check)",
-      p_url:null,p_audience:aud,p_target:target||null}));
-    if(!res.ok){ $("mNotify").textContent=res.error; return; }
-    $("reachNote").hidden=false;
-    $("reachNote").textContent = res.reach===0
-      ? "Nobody in this group has notifications switched on yet."
-      : "This would reach "+res.reach+" device"+(res.reach===1?"":"s")+".";
-    loadNotifs();
-  }catch(e){ $("mNotify").textContent=friendly(e); }
-});
-
-$("btnSend").addEventListener("click",async()=>{
-  const title=$("inTitle").value.trim(), body=$("inBody").value.trim();
-  const aud=$("inAud").value, target=$("inTarget").value.trim();
-  const url=$("inUrlN").value.trim();
-  const m=$("mNotify"); m.className="msg";
-  if(!title||!body){ m.textContent="Title and message are both required."; return; }
-  if(aud==="one"&&!target){ m.textContent="Enter the username."; return; }
-  if(!confirm("Send this notification now?")) return;
-
-  const b=$("btnSend"); b.disabled=true; b.innerHTML='<span class="spin"></span> Sending';
-  try{
-    const q=await guard(await rpc("admin_queue_notification",{
-      p_token:TOKEN,p_title:title,p_body:body,p_url:url||null,
-      p_audience:aud,p_target:target||null}));
-    if(!q.ok){ m.textContent="Could not queue: "+q.error; }
-    else if(q.reach===0){ m.textContent="Queued, but nobody in this group has notifications on."; }
-    else{
-      if(SERVER_SEND){
-        /* the database calls the function; the browser is not involved */
-        const s=await rpc("admin_send_notification",{p_token:TOKEN,p_id:q.id});
-        if(!s||!s.ok){
-          m.textContent = (s&&s.error==="NOT_CONFIGURED")
-            ? "Server sending is not configured. Set it up on the Push setup tab."
-            : "Could not start the send: "+((s&&s.error)||"unknown");
-        }else{
-          m.className="msg ok"; m.textContent="Sending… checking the result.";
-          // pg_net is asynchronous, so poll briefly for the reply
-          let tries=0;
-          const poll=setInterval(async()=>{
-            tries++;
-            try{
-              const res=await rpc("admin_send_result",{p_token:TOKEN,p_request_id:s.request_id});
-              if(res&&res.ok&&res.status){
-                clearInterval(poll);
-                let parsed=null; try{ parsed=JSON.parse(res.body); }catch(e){}
-                if(res.status===200&&parsed&&parsed.ok){
-                  m.className="msg ok";
-                  m.textContent="Sent to "+parsed.sent+" device"+(parsed.sent===1?"":"s")+
-                    (parsed.failed?(", "+parsed.failed+" failed"):"")+
-                    (parsed.removed?(", "+parsed.removed+" stale removed"):"")+".";
-                }else{
-                  m.className="msg";
-                  m.textContent="The function replied "+res.status+": "+
-                    esc(String((parsed&&parsed.error)||res.body||"").slice(0,220));
-                }
-                loadNotifs();
-              }else if(tries>12){ clearInterval(poll);
-                m.className="msg";
-                m.textContent="No reply yet. Check the notification history in a moment.";
-                loadNotifs(); }
-            }catch(e){ clearInterval(poll); }
-          },1200);
-        }
-      }else{
-        const r=await fetch(CONN.url+"/functions/v1/send-push",{
-          method:"POST", headers:fnHeaders(),
-          body:JSON.stringify({admin_token:TOKEN,notification_id:q.id})
-        });
-        const out=await r.json().catch(()=>({}));
-        if(out.ok){ m.className="msg ok"; m.textContent="Sent to "+out.sent+" device"+(out.sent===1?"":"s")+
-            (out.failed?(", "+out.failed+" failed"):"")+(out.removed?(", "+out.removed+" stale removed"):"")+"."; }
-        else{ m.textContent="Queued, but sending failed: "+(out.error||("HTTP "+r.status))+
-              ". Set up server sending on the Push setup tab — it avoids this entirely."; }
-      }
-    }
-    loadNotifs();
-  }catch(e){
-    m.textContent = /Failed to fetch|NetworkError/i.test(String(e&&e.message))
-      ? "Blocked by the browser. Turn JWT Verification OFF on the send-push function, then retry."
-      : friendly(e);
-  }
-  b.disabled=false; b.textContent="Queue and send";
-});
-
-/* ---------- server-side sending ---------- */
-async function refreshCfg(){
-  if(!TOKEN) return;
-  try{
-    const c=await rpc("admin_config_status",{p_token:TOKEN});
-    if(c&&c.ok){
-      SERVER_SEND = c.url_set && c.key_set;
-      const out=$("cfgOut");
-      out.hidden=false;
-      out.innerHTML = SERVER_SEND
-        ? '<b style="color:#2E7D4F">Server sending is on.</b><br>'+esc(c.url)
-        : '<span style="color:#B8860B">Not configured yet — notifications will be attempted from the browser, which may fail.</span>';
-      if(c.url && !$("inFnUrl").value) $("inFnUrl").value=c.url;
-    }
-  }catch(e){}
-}
-let SERVER_SEND=false;
-
-$("btnSaveCfg").addEventListener("click",async()=>{
-  const url=$("inFnUrl").value.trim(), key=$("inSvcKey").value.trim();
-  const m=$("mCfg"); m.className="msg";
-  if(!/^https:\/\/.+\/functions\/v1\/.+/.test(url)){ m.textContent="That should look like https://xxxx.supabase.co/functions/v1/send-push"; return; }
-  if(key.length<20){ m.textContent="That key looks too short."; return; }
-  try{
-    const r=await rpc("admin_set_config",{p_token:TOKEN,p_function_url:url,p_service_key:key});
-    if(r&&r.ok){ m.className="msg ok"; m.textContent="Saved. Notifications will now be sent by the database."; $("inSvcKey").value=""; refreshCfg(); }
-    else m.textContent="Could not save: "+((r&&r.error)||"unknown");
-  }catch(e){ m.textContent=friendly(e); }
-});
-
-/* ---------- self-test: is send-push deployed and configured? ---------- */
-$("btnSelfTest").addEventListener("click",async()=>{
-  const out=$("selfOut"); out.hidden=false; out.textContent="Contacting send-push…";
-  if(!TOKEN){ out.textContent="Sign in first."; return; }
-  try{
-    const r=await fetch(CONN.url+"/functions/v1/send-push",{
-      method:"POST",
-      headers:fnHeaders(),
-      body:JSON.stringify({admin_token:TOKEN,test_endpoint:"selftest"})
-    });
-    const txt=await r.text();
-    let j=null; try{ j=JSON.parse(txt); }catch(e){}
-    if(j&&j.ok){
-      out.innerHTML='<b style="color:#2E7D4F">All good.</b><br>'+esc(j.selftest)+
-        '<br>Signed in as: '+esc(j.admin)+
-        '<br><br>You can now send a real notification.';
-    }else if(j&&j.code==="INVALID_CREDENTIALS"){
-      out.innerHTML='<b style="color:#C4161C">The gateway rejected the key.</b><br>'+
-        'Your project uses the 2026 keys (<code class="k">sb_publishable_…</code>), which are not JWTs.'+
-        '<br><br><b>Fix:</b> on <b>send-push → Settings</b>, turn <b>JWT Verification OFF</b>. '+
-        'Those keys cannot be verified as JWTs, so the platform check must be off.'+
-        '<br><br>This page now sends the key on the <code class="k">apikey</code> header only, which is what Supabase requires.';
-    }else if(r.status===404){
-      out.innerHTML='<b style="color:#C4161C">Function not found.</b><br>'+
-        'No Edge Function named <b>send-push</b> is deployed on this project. '+
-        'Create it under Edge Functions → Deploy a new function → Via Editor.';
-    }else{
-      out.innerHTML='<b style="color:#C4161C">HTTP '+r.status+'</b><br>'+
-        esc((j&&j.error)||txt).slice(0,400)+
-        '<br><br>If it mentions VAPID, the secrets are missing or misspelled. '+
-        'If it mentions NOT_ADMIN, sign out and back in.';
-    }
-  }catch(e){
-    /* A CORS/preflight failure surfaces here as an opaque "Failed to fetch",
-       because the browser refuses to expose the details. Nearly always it is
-       the platform JWT check rejecting the OPTIONS request. */
-    out.innerHTML='<b style="color:#C4161C">The browser blocked the call.</b>'+
-      '<br><br>This is almost always the platform JWT check rejecting the '+
-      'preflight before your function runs.'+
-      '<br><br><b>Fix:</b> Supabase &rarr; <b>Edge Functions</b> &rarr; <b>send-push</b> '+
-      '&rarr; <b>Settings</b> &rarr; turn <b>JWT Verification</b> OFF, then try again.'+
-      '<br><br>It is safe: this function checks your admin token itself.'+
-      '<br><br><span style="color:#9A9691">Raw: '+esc(String(e&&e.message))+'</span>';
-  }
-});
-
-/* ==========================================================
-   VAPID KEY GENERATOR — runs entirely in this browser
-   ========================================================== */
-function b64url(buf){
-  const b=btoa(String.fromCharCode.apply(null,new Uint8Array(buf)));
-  return b.replace(/\+/g,"-").replace(/\//g,"_").replace(/=+$/,"");
-}
-$("btnVapid").addEventListener("click",async()=>{
-  const out=$("vapidOut"); out.hidden=false; out.textContent="Generating…";
-  try{
-    const kp=await crypto.subtle.generateKey({name:"ECDSA",namedCurve:"P-256"},true,["sign","verify"]);
-    const pubRaw=await crypto.subtle.exportKey("raw",kp.publicKey);          // 65 bytes
-    const jwk=await crypto.subtle.exportKey("jwk",kp.privateKey);            // d = private
-    const pub=b64url(pubRaw), priv=jwk.d;
-    out.innerHTML='<b>VAPID_PUBLIC_KEY</b><br>'+esc(pub)+
-                  '<br><br><b>VAPID_PRIVATE_KEY</b><br>'+esc(priv)+
-                  '<br><br><b>VAPID_SUBJECT</b><br>mailto:your@email.com'+
-                  '<br><br><span style="color:#B8860B">Copy these now. Closing this page loses the private key, '+
-                  'and a new pair invalidates everyone who already allowed notifications.</span>';
-  }catch(e){
-    out.textContent="Your browser refused to generate keys: "+e.message;
-  }
-});
-
 /* ==========================================================
    START
    ========================================================== */
-pv();
 showScreen();
 if(TOKEN){
   rpc("admin_overview",{p_token:TOKEN}).then(o=>{
