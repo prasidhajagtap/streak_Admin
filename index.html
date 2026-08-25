@@ -371,10 +371,12 @@ td.num{font-family:var(--mono);font-weight:700}
           <code class="k">send-push</code>, paste the contents of
           <code class="k">edge-function-send-push.ts</code>, and Deploy.
           No CLI or Docker needed.
-          <div class="warnrow">Then open <b>send-push → Settings</b> and turn
-          <b>JWT Verification OFF</b>. Leaving it on makes the browser's preflight
-          fail with a CORS error before your function ever runs. The function
-          checks your admin token itself, so this is safe.</div>
+          <div class="warnrow"><b>Then turn JWT Verification OFF</b> on
+          <b>send-push → Settings</b>. This is required, not optional: projects on the
+          2026 keys (<code class="k">sb_publishable_…</code>) cannot pass the platform
+          JWT check at all, because those keys are not JWTs. Leaving it on gives a
+          CORS or INVALID_CREDENTIALS error before your function ever runs.
+          The function verifies your admin token itself, so this is safe.</div>
         </div></div>
 
         <div class="step"><i>4</i><div>
@@ -423,6 +425,20 @@ function drop(k){ try{ localStorage.removeItem(k); }catch(e){} }
 const $=id=>document.getElementById(id);
 const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 
+/* Supabase has two generations of API key.
+     Legacy anon keys are JWTs and start "eyJ". They may be sent on both the
+     apikey header and Authorization: Bearer.
+     The 2026 keys (sb_publishable_...) are NOT JWTs. If they are sent as a
+     bearer token the gateway tries to parse them as a JWT and rejects the
+     call with INVALID_CREDENTIALS before the function runs. Those keys go on
+     the apikey header ONLY. */
+function isLegacyJwtKey(k){ return /^eyJ/.test(String(k||"")); }
+function fnHeaders(){
+  const h={"Content-Type":"application/json", apikey:CONN.key};
+  if(isLegacyJwtKey(CONN.key)) h.Authorization="Bearer "+CONN.key;
+  return h;
+}
+
 async function rpc(fn,body){
   if(!CONN) throw new Error("Not connected");
   const ac=("AbortController" in window)?new AbortController():null;
@@ -431,8 +447,7 @@ async function rpc(fn,body){
   try{
     r=await fetch(CONN.url+"/rest/v1/rpc/"+fn,{
       method:"POST",
-      headers:{"Content-Type":"application/json",apikey:CONN.key,
-               Authorization:"Bearer "+CONN.key},
+      headers:fnHeaders(),
       body:JSON.stringify(body||{}),
       signal:ac?ac.signal:undefined
     });
@@ -716,7 +731,7 @@ $("btnSend").addEventListener("click",async()=>{
     else{
       const r=await fetch(CONN.url+"/functions/v1/send-push",{
         method:"POST",
-        headers:{"Content-Type":"application/json",Authorization:"Bearer "+CONN.key,apikey:CONN.key},
+        headers:fnHeaders(),
         body:JSON.stringify({admin_token:TOKEN,notification_id:q.id})
       });
       const out=await r.json().catch(()=>({}));
@@ -741,7 +756,7 @@ $("btnSelfTest").addEventListener("click",async()=>{
   try{
     const r=await fetch(CONN.url+"/functions/v1/send-push",{
       method:"POST",
-      headers:{"Content-Type":"application/json",Authorization:"Bearer "+CONN.key,apikey:CONN.key},
+      headers:fnHeaders(),
       body:JSON.stringify({admin_token:TOKEN,test_endpoint:"selftest"})
     });
     const txt=await r.text();
@@ -750,6 +765,12 @@ $("btnSelfTest").addEventListener("click",async()=>{
       out.innerHTML='<b style="color:#2E7D4F">All good.</b><br>'+esc(j.selftest)+
         '<br>Signed in as: '+esc(j.admin)+
         '<br><br>You can now send a real notification.';
+    }else if(j&&j.code==="INVALID_CREDENTIALS"){
+      out.innerHTML='<b style="color:#C4161C">The gateway rejected the key.</b><br>'+
+        'Your project uses the 2026 keys (<code class="k">sb_publishable_…</code>), which are not JWTs.'+
+        '<br><br><b>Fix:</b> on <b>send-push → Settings</b>, turn <b>JWT Verification OFF</b>. '+
+        'Those keys cannot be verified as JWTs, so the platform check must be off.'+
+        '<br><br>This page now sends the key on the <code class="k">apikey</code> header only, which is what Supabase requires.';
     }else if(r.status===404){
       out.innerHTML='<b style="color:#C4161C">Function not found.</b><br>'+
         'No Edge Function named <b>send-push</b> is deployed on this project. '+
