@@ -145,6 +145,8 @@ td.num{font-family:var(--mono);font-weight:700}
 .keyout{font-family:var(--mono);font-size:11.5px;background:var(--cream);border:1.5px solid var(--line);
   border-radius:10px;padding:11px;overflow-wrap:anywhere;margin-top:8px;line-height:1.7}
 .keyout b{color:var(--maroon)}
+.warnrow{background:#FFF3D6;border:1.5px solid var(--gold);border-radius:9px;
+  padding:10px 12px;margin-top:9px;font-size:12.5px;line-height:1.55;color:#6B5410}
 .spin{display:inline-block;width:14px;height:14px;border:2px solid rgba(255,255,255,.35);
   border-top-color:#fff;border-radius:50%;animation:sp .7s linear infinite}
 @keyframes sp{to{transform:rotate(360deg)}}
@@ -369,6 +371,10 @@ td.num{font-family:var(--mono);font-weight:700}
           <code class="k">send-push</code>, paste the contents of
           <code class="k">edge-function-send-push.ts</code>, and Deploy.
           No CLI or Docker needed.
+          <div class="warnrow">Then open <b>send-push → Settings</b> and turn
+          <b>JWT Verification OFF</b>. Leaving it on makes the browser's preflight
+          fail with a CORS error before your function ever runs. The function
+          checks your admin token itself, so this is safe.</div>
         </div></div>
 
         <div class="step"><i>4</i><div>
@@ -717,10 +723,14 @@ $("btnSend").addEventListener("click",async()=>{
       if(out.ok){ m.className="msg ok"; m.textContent="Sent to "+out.sent+" device"+(out.sent===1?"":"s")+
           (out.failed?(", "+out.failed+" failed"):"")+(out.removed?(", "+out.removed+" stale removed"):"")+"."; }
       else{ m.textContent="Queued, but sending failed: "+(out.error||("HTTP "+r.status))+
-            ". Check the send-push function is deployed and the VAPID secrets are set."; }
+            ". Run the self-test on the Push setup tab — it names the cause."; }
     }
     loadNotifs();
-  }catch(e){ m.textContent=friendly(e); }
+  }catch(e){
+    m.textContent = /Failed to fetch|NetworkError/i.test(String(e&&e.message))
+      ? "Blocked by the browser. Turn JWT Verification OFF on the send-push function, then retry."
+      : friendly(e);
+  }
   b.disabled=false; b.textContent="Queue and send";
 });
 
@@ -751,7 +761,16 @@ $("btnSelfTest").addEventListener("click",async()=>{
         'If it mentions NOT_ADMIN, sign out and back in.';
     }
   }catch(e){
-    out.innerHTML='<b style="color:#C4161C">Could not reach the function.</b><br>'+esc(String(e.message));
+    /* A CORS/preflight failure surfaces here as an opaque "Failed to fetch",
+       because the browser refuses to expose the details. Nearly always it is
+       the platform JWT check rejecting the OPTIONS request. */
+    out.innerHTML='<b style="color:#C4161C">The browser blocked the call.</b>'+
+      '<br><br>This is almost always the platform JWT check rejecting the '+
+      'preflight before your function runs.'+
+      '<br><br><b>Fix:</b> Supabase &rarr; <b>Edge Functions</b> &rarr; <b>send-push</b> '+
+      '&rarr; <b>Settings</b> &rarr; turn <b>JWT Verification</b> OFF, then try again.'+
+      '<br><br>It is safe: this function checks your admin token itself.'+
+      '<br><br><span style="color:#9A9691">Raw: '+esc(String(e&&e.message))+'</span>';
   }
 });
 
