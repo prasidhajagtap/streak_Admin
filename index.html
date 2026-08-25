@@ -402,6 +402,30 @@ td.num{font-family:var(--mono);font-weight:700}
       </div>
 
       <div class="card">
+        <h2>Send from the server (recommended)</h2>
+        <p class="muted" style="margin-bottom:12px">
+          Calling the function from this page goes through the browser, the CORS
+          preflight and the platform key check &mdash; which fails on projects using
+          the 2026 <code class="k">sb_publishable_</code> keys. Store the details below
+          and the database calls the function itself instead: server to server, no
+          browser involved. This is the reliable path.
+        </p>
+        <div class="field">
+          <label for="inFnUrl">Function URL</label>
+          <input id="inFnUrl" type="text" placeholder="https://xxxx.supabase.co/functions/v1/send-push" autocomplete="off">
+        </div>
+        <div class="field">
+          <label for="inSvcKey">Service role / secret key</label>
+          <input id="inSvcKey" type="password" placeholder="sb_secret_... or eyJ..." autocomplete="off">
+          <p class="msg hint">Project Settings &rarr; API Keys. This is stored in your own database,
+            readable only by these admin functions &mdash; never sent to the browser again.</p>
+        </div>
+        <p class="msg" id="mCfg"></p>
+        <button class="btn gold" id="btnSaveCfg" type="button">Save and use server sending</button>
+        <div class="keyout" id="cfgOut" hidden></div>
+      </div>
+
+      <div class="card">
         <h2>Connection</h2>
         <p class="muted">Project: <code class="k" id="shownUrl">—</code></p>
         <button class="btn ghost sm" id="btnForget" type="button" style="margin-top:10px">Forget this project on this device</button>
@@ -523,7 +547,7 @@ $("btnIn").addEventListener("click",async()=>{
       save(K_TOK,TOKEN);
       $("whoName").textContent=ADMIN;
       $("mLogin").textContent="";
-      showScreen(); loadAll();
+      showScreen(); loadAll(); refreshCfg();
     }
   }catch(e){ $("mLogin").textContent=friendly(e); }
   b.disabled=false; b.textContent="Sign in";
@@ -729,16 +753,53 @@ $("btnSend").addEventListener("click",async()=>{
     if(!q.ok){ m.textContent="Could not queue: "+q.error; }
     else if(q.reach===0){ m.textContent="Queued, but nobody in this group has notifications on."; }
     else{
-      const r=await fetch(CONN.url+"/functions/v1/send-push",{
-        method:"POST",
-        headers:fnHeaders(),
-        body:JSON.stringify({admin_token:TOKEN,notification_id:q.id})
-      });
-      const out=await r.json().catch(()=>({}));
-      if(out.ok){ m.className="msg ok"; m.textContent="Sent to "+out.sent+" device"+(out.sent===1?"":"s")+
-          (out.failed?(", "+out.failed+" failed"):"")+(out.removed?(", "+out.removed+" stale removed"):"")+"."; }
-      else{ m.textContent="Queued, but sending failed: "+(out.error||("HTTP "+r.status))+
-            ". Run the self-test on the Push setup tab — it names the cause."; }
+      if(SERVER_SEND){
+        /* the database calls the function; the browser is not involved */
+        const s=await rpc("admin_send_notification",{p_token:TOKEN,p_id:q.id});
+        if(!s||!s.ok){
+          m.textContent = (s&&s.error==="NOT_CONFIGURED")
+            ? "Server sending is not configured. Set it up on the Push setup tab."
+            : "Could not start the send: "+((s&&s.error)||"unknown");
+        }else{
+          m.className="msg ok"; m.textContent="Sending… checking the result.";
+          // pg_net is asynchronous, so poll briefly for the reply
+          let tries=0;
+          const poll=setInterval(async()=>{
+            tries++;
+            try{
+              const res=await rpc("admin_send_result",{p_token:TOKEN,p_request_id:s.request_id});
+              if(res&&res.ok&&res.status){
+                clearInterval(poll);
+                let parsed=null; try{ parsed=JSON.parse(res.body); }catch(e){}
+                if(res.status===200&&parsed&&parsed.ok){
+                  m.className="msg ok";
+                  m.textContent="Sent to "+parsed.sent+" device"+(parsed.sent===1?"":"s")+
+                    (parsed.failed?(", "+parsed.failed+" failed"):"")+
+                    (parsed.removed?(", "+parsed.removed+" stale removed"):"")+".";
+                }else{
+                  m.className="msg";
+                  m.textContent="The function replied "+res.status+": "+
+                    esc(String((parsed&&parsed.error)||res.body||"").slice(0,220));
+                }
+                loadNotifs();
+              }else if(tries>12){ clearInterval(poll);
+                m.className="msg";
+                m.textContent="No reply yet. Check the notification history in a moment.";
+                loadNotifs(); }
+            }catch(e){ clearInterval(poll); }
+          },1200);
+        }
+      }else{
+        const r=await fetch(CONN.url+"/functions/v1/send-push",{
+          method:"POST", headers:fnHeaders(),
+          body:JSON.stringify({admin_token:TOKEN,notification_id:q.id})
+        });
+        const out=await r.json().catch(()=>({}));
+        if(out.ok){ m.className="msg ok"; m.textContent="Sent to "+out.sent+" device"+(out.sent===1?"":"s")+
+            (out.failed?(", "+out.failed+" failed"):"")+(out.removed?(", "+out.removed+" stale removed"):"")+"."; }
+        else{ m.textContent="Queued, but sending failed: "+(out.error||("HTTP "+r.status))+
+              ". Set up server sending on the Push setup tab — it avoids this entirely."; }
+      }
     }
     loadNotifs();
   }catch(e){
@@ -747,6 +808,36 @@ $("btnSend").addEventListener("click",async()=>{
       : friendly(e);
   }
   b.disabled=false; b.textContent="Queue and send";
+});
+
+/* ---------- server-side sending ---------- */
+async function refreshCfg(){
+  if(!TOKEN) return;
+  try{
+    const c=await rpc("admin_config_status",{p_token:TOKEN});
+    if(c&&c.ok){
+      SERVER_SEND = c.url_set && c.key_set;
+      const out=$("cfgOut");
+      out.hidden=false;
+      out.innerHTML = SERVER_SEND
+        ? '<b style="color:#2E7D4F">Server sending is on.</b><br>'+esc(c.url)
+        : '<span style="color:#B8860B">Not configured yet — notifications will be attempted from the browser, which may fail.</span>';
+      if(c.url && !$("inFnUrl").value) $("inFnUrl").value=c.url;
+    }
+  }catch(e){}
+}
+let SERVER_SEND=false;
+
+$("btnSaveCfg").addEventListener("click",async()=>{
+  const url=$("inFnUrl").value.trim(), key=$("inSvcKey").value.trim();
+  const m=$("mCfg"); m.className="msg";
+  if(!/^https:\/\/.+\/functions\/v1\/.+/.test(url)){ m.textContent="That should look like https://xxxx.supabase.co/functions/v1/send-push"; return; }
+  if(key.length<20){ m.textContent="That key looks too short."; return; }
+  try{
+    const r=await rpc("admin_set_config",{p_token:TOKEN,p_function_url:url,p_service_key:key});
+    if(r&&r.ok){ m.className="msg ok"; m.textContent="Saved. Notifications will now be sent by the database."; $("inSvcKey").value=""; refreshCfg(); }
+    else m.textContent="Could not save: "+((r&&r.error)||"unknown");
+  }catch(e){ m.textContent=friendly(e); }
 });
 
 /* ---------- self-test: is send-push deployed and configured? ---------- */
@@ -826,7 +917,7 @@ pv();
 showScreen();
 if(TOKEN){
   rpc("admin_overview",{p_token:TOKEN}).then(o=>{
-    if(o&&o.ok){ $("whoName").textContent="admin"; loadAll(); }
+    if(o&&o.ok){ $("whoName").textContent="admin"; loadAll(); refreshCfg(); }
     else { drop(K_TOK); TOKEN=null; showScreen(); }
   }).catch(()=>{ drop(K_TOK); TOKEN=null; showScreen(); });
 }
