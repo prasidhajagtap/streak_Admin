@@ -39,6 +39,17 @@ a{color:var(--maroon)}
 .top .sp{margin-left:auto}
 .whoami{font-size:12px;font-weight:700;color:var(--grey-dk)}
 .whoami b{color:var(--maroon)}
+.refbox{display:flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700;color:var(--grey)}
+.refbox button{display:flex;align-items:center;gap:6px;color:var(--maroon);
+  border:1.5px solid var(--line);background:var(--paper);border-radius:9px;padding:7px 11px;
+  font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
+.refbox button svg{width:14px;height:14px}
+.refbox button[disabled]{opacity:.5;pointer-events:none}
+.refbox button.spin svg{animation:spin360 .8s linear infinite}
+@keyframes spin360{to{transform:rotate(360deg)}}
+.autolbl{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--grey-dk);cursor:pointer}
+.autolbl input{accent-color:var(--maroon)}
 
 /* ---------- cards ---------- */
 .card{background:var(--paper);border:1.5px solid var(--line);border-radius:16px;
@@ -129,6 +140,14 @@ td.num{font-family:var(--mono);font-weight:700}
     <h1>Word<em>Search</em> Admin</h1>
     <div class="sp"></div>
     <div class="whoami" id="whoami" hidden>Signed in as <b id="whoName">—</b></div>
+    <div class="refbox" id="refBox" hidden>
+      <span id="lastUpd">&nbsp;</span>
+      <button id="btnRefresh" type="button" title="Reload every figure now">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 0 1-9 9 9 9 0 0 1-7.4-3.9M3 12a9 9 0 0 1 9-9 9 9 0 0 1 7.4 3.9"/><path d="M19.4 3v3.9h-3.9M4.6 21v-3.9h3.9"/></svg>
+        Refresh
+      </button>
+      <label class="autolbl"><input type="checkbox" id="chkAuto"> Auto</label>
+    </div>
     <button class="btn ghost sm" id="btnOut" type="button" hidden>Sign out</button>
   </header>
 
@@ -332,6 +351,7 @@ function showScreen(){
   $("scLogin").hidden   = !conn || auth;
   $("scMain").hidden    = !auth;
   $("whoami").hidden    = !auth;
+  $("refBox").hidden    = !auth;
   $("btnOut").hidden    = !auth;
   if(CONN) $("shownUrl").textContent=CONN.url;
 }
@@ -374,13 +394,17 @@ $("btnIn").addEventListener("click",async()=>{
       save(K_TOK,TOKEN);
       $("whoName").textContent=ADMIN;
       $("mLogin").textContent="";
-      showScreen(); loadAll(); refreshCfg();
+      showScreen(); loadAll();
+      $("chkAuto").checked=!!load("ws.admin.auto",false);
+      if($("chkAuto").checked) $("chkAuto").dispatchEvent(new Event("change")); refreshCfg();
     }
   }catch(e){ $("mLogin").textContent=friendly(e); }
   b.disabled=false; b.textContent="Sign in";
 });
 
-$("btnOut").addEventListener("click",()=>{ drop(K_TOK); TOKEN=null; location.reload(); });
+$("btnOut").addEventListener("click",()=>{
+  drop(K_TOK); TOKEN=null; clearInterval(autoTimer); location.reload();
+});
 
 document.querySelectorAll(".tab").forEach(t=>{
   t.addEventListener("click",()=>{
@@ -429,9 +453,46 @@ async function guard(res){
   return res;
 }
 
+/* ---------- refresh, timestamp, auto-refresh ---------- */
+let lastLoad=0, autoTimer=null;
+
+function stampNow(){
+  lastLoad=Date.now();
+  paintStamp();
+}
+function paintStamp(){
+  if(!lastLoad) return;
+  const secs=Math.round((Date.now()-lastLoad)/1000);
+  $("lastUpd").textContent = secs<10 ? "just now"
+    : secs<60 ? ("updated "+secs+"s ago")
+    : ("updated "+Math.round(secs/60)+"m ago");
+}
+setInterval(paintStamp,5000);
+
+async function refreshAll(){
+  const b=$("btnRefresh");
+  b.disabled=true;b.classList.add("spin");
+  try{ await loadAll(); }catch(e){}
+  b.disabled=false;b.classList.remove("spin");
+}
+$("btnRefresh").addEventListener("click",refreshAll);
+
+$("chkAuto").addEventListener("change",function(){
+  clearInterval(autoTimer);autoTimer=null;
+  save("ws.admin.auto",$("chkAuto").checked);
+  if($("chkAuto").checked){
+    /* every 60s, and only while the tab is actually being looked at, so a
+       forgotten tab does not sit polling the database all day */
+    autoTimer=setInterval(function(){
+      if(!document.hidden && TOKEN) loadAll();
+    },60000);
+  }
+});
+
 async function loadAll(){
   try{
     await Promise.all([loadOverview(),loadDaily(),loadPlayers(),loadThemes()]);
+    stampNow();
   }catch(e){ if(String(e.message)!=="expired") console.error(e); }
 }
 
