@@ -271,6 +271,31 @@ td.num{font-family:var(--mono);font-weight:700}
     <!-- ---- settings ---- -->
     <div id="paneSetup" hidden>
       <div class="card">
+        <h2>Reset a player's PIN</h2>
+        <p class="muted" style="margin-bottom:12px">
+          The last resort, for someone who has forgotten both their PIN and their
+          secret number. Set a temporary PIN, tell them, and they can change it
+          themselves afterwards with Forgot PIN.
+        </p>
+        <div class="row2">
+          <div class="field">
+            <label for="inRpUser">Username</label>
+            <input id="inRpUser" type="text" placeholder="Exact username" autocomplete="off">
+          </div>
+          <div class="field">
+            <label for="inRpPin">Temporary 4-digit PIN</label>
+            <input id="inRpPin" type="text" inputmode="numeric" maxlength="4" placeholder="e.g. 4821" autocomplete="off">
+          </div>
+        </div>
+        <div class="row2">
+          <button class="btn ghost" id="btnFindPlayer" type="button">Look up player</button>
+          <button class="btn" id="btnResetPin" type="button">Reset their PIN</button>
+        </div>
+        <p class="msg" id="mReset"></p>
+        <div class="keyout" id="findOut" hidden></div>
+      </div>
+
+      <div class="card">
         <h2>Connection</h2>
         <p class="muted">Project: <code class="k" id="shownUrl">&mdash;</code></p>
         <button class="btn ghost sm" id="btnForget" type="button" style="margin-top:10px">Forget this project on this device</button>
@@ -452,6 +477,46 @@ async function guard(res){
   }
   return res;
 }
+
+/* ---------- admin PIN reset ---------- */
+$("btnFindPlayer").addEventListener("click",async()=>{
+  const u=$("inRpUser").value.trim();
+  const out=$("findOut"); const m=$("mReset"); m.className="msg"; m.textContent="";
+  if(!u){ m.textContent="Enter a username."; return; }
+  out.hidden=false; out.textContent="Looking\u2026";
+  try{
+    const r=await guard(await rpc("admin_find_player",{p_token:TOKEN,p_username:u}));
+    if(!r.ok){ out.textContent="Could not look that up."; return; }
+    if(!r.found){ out.innerHTML='<b style="color:#C4161C">No player with that username.</b>'; return; }
+    out.innerHTML='<b>'+esc(r.username)+'</b><br>'+
+      'Joined '+esc(r.joined)+' &middot; last seen '+esc(r.last_seen)+'<br>'+
+      'Recovery word set: '+(r.has_recovery?'<b style="color:#2E7D4F">yes</b>':'<b style="color:#B8860B">no</b>')+'<br>'+
+      'Noted their secret number: '+(r.acknowledged?'yes':'not yet');
+  }catch(e){ out.textContent=friendly(e); }
+});
+
+$("btnResetPin").addEventListener("click",async()=>{
+  const u=$("inRpUser").value.trim(), pin=$("inRpPin").value.trim();
+  const m=$("mReset"); m.className="msg";
+  if(!u){ m.textContent="Enter a username."; return; }
+  if(!/^[0-9]{4}$/.test(pin)){ m.textContent="The temporary PIN must be exactly 4 digits."; return; }
+  if(!confirm('Reset the PIN for "'+u+'" to '+pin+'?\n\nThis signs them out everywhere.')) return;
+  const b=$("btnResetPin"); b.disabled=true; b.innerHTML='<span class="spin"></span> Resetting';
+  try{
+    const r=await guard(await rpc("admin_reset_pin",{p_token:TOKEN,p_username:u,p_new_pin:pin}));
+    if(r.ok){
+      m.className="msg ok";
+      m.textContent='Done. Tell '+r.username+' their temporary PIN is '+pin+'.';
+      $("inRpPin").value="";
+    }else{
+      m.textContent = r.error==="NO_PLAYER" ? "No player with that username."
+        : r.error==="BAD_PIN" ? "The PIN must be exactly 4 digits."
+        : "Could not reset: "+r.error;
+    }
+  }catch(e){ m.textContent=friendly(e); }
+  b.disabled=false; b.textContent="Reset their PIN";
+});
+$("inRpPin").addEventListener("input",e=>{ e.target.value=e.target.value.replace(/[^0-9]/g,"").slice(0,4); });
 
 /* ---------- refresh, timestamp, auto-refresh ---------- */
 let lastLoad=0, autoTimer=null;
