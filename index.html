@@ -271,6 +271,26 @@ td.num{font-family:var(--mono);font-weight:700}
     <!-- ---- settings ---- -->
     <div id="paneSetup" hidden>
       <div class="card">
+        <h2>Versions in the wild</h2>
+        <p class="muted" style="margin-bottom:12px">
+          Which build each player last signed in with. Setting a minimum makes
+          anyone below it reload themselves the next time they open the game.
+          It cannot reach a browser that is closed &mdash; nothing can.
+        </p>
+        <div class="tblwrap"><table id="tblBuilds"></table></div>
+        <div class="row2" style="margin-top:14px">
+          <div class="field">
+            <label for="inMinBuild">Minimum allowed build</label>
+            <input id="inMinBuild" type="number" min="0" step="1" placeholder="0 = no minimum">
+          </div>
+          <div class="field" style="display:flex;align-items:flex-end">
+            <button class="btn ghost full" id="btnSetMin" type="button">Apply minimum</button>
+          </div>
+        </div>
+        <p class="msg" id="mMinBuild"></p>
+      </div>
+
+      <div class="card">
         <h2>Reset a player's PIN</h2>
         <p class="muted" style="margin-bottom:12px">
           The last resort, for someone who has forgotten both their PIN and their
@@ -578,8 +598,10 @@ async function loadOverview(){
     {l:"Completion rate 7d",   v:o.completion_rate+"%"},
     {l:"Streak alive",         v:o.streak_alive},
     {l:"Never played",         v:o.never_played},
-    {l:"Flagged scores",       v:o.flagged}
+    {l:"Flagged scores",       v:o.flagged},
+    {l:"On an old version",    v:staleCount(o)}
   ]);
+  renderBuilds(o);
   table($("tblTop"),["#","Player","Points","Time"],o.top_today||[],
     (r,i)=>'<tr><td class="num">'+(i+1)+'</td><td>'+esc(r.username)+
            '</td><td class="num">'+r.total_points+'</td><td class="num">'+fmtT(r.time_sec)+'</td></tr>');
@@ -590,6 +612,38 @@ async function loadOverview(){
        '</td><td class="num">'+fmtT(r.time_sec)+'</td><td class="num">'+r.total_points+
        '</td><td>'+esc(r.theme)+'</td></tr>');
 }
+
+/* How many players last ran something below the current minimum. */
+let MIN_BUILD=0;
+function staleCount(o){
+  MIN_BUILD=Number(o.min_build)||0;
+  if(!MIN_BUILD) return 0;
+  return (o.builds||[]).reduce((n,b)=>n+((Number(b.build)||0)<MIN_BUILD?b.players:0),0);
+}
+function renderBuilds(o){
+  const rows=(o.builds||[]).slice();
+  $("inMinBuild").placeholder=MIN_BUILD?("currently "+MIN_BUILD):"0 = no minimum";
+  table($("tblBuilds"),["Build","Players","Status"],rows,
+    r=>{
+      const b=Number(r.build)||0;
+      const cls=!b?"":(MIN_BUILD&&b<MIN_BUILD?"bad":"good");
+      const label=!b?"never signed in":(MIN_BUILD&&b<MIN_BUILD?"below minimum":"current");
+      return '<tr><td class="num">'+(b||"—")+'</td><td class="num">'+r.players+
+             '</td><td><span class="pill '+cls+'">'+label+'</span></td></tr>';
+    });
+}
+
+$("btnSetMin").addEventListener("click",async()=>{
+  const v=parseInt($("inMinBuild").value,10);
+  const m=$("mMinBuild"); m.className="msg";
+  if(isNaN(v)||v<0){ m.textContent="Enter a whole number, 0 or more."; return; }
+  if(!confirm("Force everyone below build "+v+" to reload?\n\nThis only acts the next time each player opens the game.")) return;
+  try{
+    const r=await guard(await rpc("admin_set_min_build",{p_token:TOKEN,p_build:v}));
+    if(r.ok){ m.className="msg ok"; m.textContent="Minimum build is now "+r.min_build+"."; loadOverview(); }
+    else m.textContent="Could not set that: "+r.error;
+  }catch(e){ m.textContent=friendly(e); }
+});
 
 async function loadDaily(){
   const d=await guard(await rpc("admin_daily",{p_token:TOKEN,p_days:30}));
@@ -612,12 +666,19 @@ async function loadPlayers(){
   const q=$("inSearch").value.trim();
   const p=await guard(await rpc("admin_players",{p_token:TOKEN,p_search:q||null,p_limit:200}));
   if(!p.ok) return;
-  table($("tblPlayers"),["Player","Joined","Games","Solved","Points","Best","Last played"],
+  table($("tblPlayers"),["Player","Joined","Games","Solved","Points","Best","Last played","Build","Recovery"],
     p.rows||[],
     r=>'<tr><td><b>'+esc(r.username)+'</b></td><td class="num">'+esc(r.joined)+
        '</td><td class="num">'+r.games+'</td><td class="num">'+r.solved+
        '</td><td class="num">'+r.total_points+'</td><td class="num">'+fmtT(r.best_time)+
        '</td><td class="num">'+esc(r.last_played||"—")+
+       '</td><td class="num">'+
+         (r.last_build
+           ? (MIN_BUILD && r.last_build<MIN_BUILD
+               ? '<span class="pill bad">'+r.last_build+'</span>'
+               : r.last_build)
+           : '—')+
+       '</td><td>'+(r.has_recovery?'<span class="pill good">set</span>':'<span class="pill">none</span>')+
        '</td></tr>');
 }
 
