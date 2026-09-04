@@ -121,6 +121,24 @@ td.num{font-family:var(--mono);font-weight:700}
 .pill.bad{background:#F7D9D9;color:var(--red)}
 .pill.warn{background:#FFF3D6;color:var(--warn)}
 
+/* ---------- small bits ---------- */
+.counter{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--grey);
+  text-transform:none;letter-spacing:0;margin-left:8px}
+.k{font-family:var(--mono);font-size:12px;font-weight:700;background:var(--cream);
+  border:1px solid var(--line);border-radius:6px;padding:2px 7px;
+  display:inline-block;word-break:break-all}
+.keyout{margin-top:12px;padding:13px 14px;border-radius:12px;background:var(--cream);
+  border:1.5px solid var(--line);font-size:13px;line-height:1.7}
+td.empty{color:var(--grey);font-style:italic;text-align:center;padding:20px 10px}
+/* the inline spinner inside a button label. Scoped to span so it does not
+   collide with .refbox button.spin, which spins an svg instead. */
+span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
+  border:2px solid currentColor;border-top-color:transparent;
+  animation:spin360 .7s linear infinite;vertical-align:-2px}
+@media(prefers-reduced-motion:reduce){
+  span.spin,.refbox button.spin svg{animation:none}
+}
+
 /* ---------- bar chart ---------- */
 .chart{display:flex;align-items:flex-end;gap:3px;height:150px;padding-top:8px}
 .chart .bar{flex:1;min-width:4px;background:linear-gradient(180deg,var(--orange),var(--maroon));
@@ -169,7 +187,7 @@ td.num{font-family:var(--mono);font-weight:700}
         <label for="inKey">Anon public key</label>
         <input id="inKey" type="text" placeholder="eyJhbGciOi..." autocomplete="off">
       </div>
-      <p class="msg" id="mConnect"></p>
+      <p class="msg" id="mConnect" role="status" aria-live="polite"></p>
       <button class="btn full" id="btnConnect" type="button">Save and continue</button>
     </div>
   </section>
@@ -187,7 +205,7 @@ td.num{font-family:var(--mono);font-weight:700}
         <label for="inPass">Password</label>
         <input id="inPass" type="password" autocomplete="current-password">
       </div>
-      <p class="msg" id="mLogin"></p>
+      <p class="msg" id="mLogin" role="status" aria-live="polite"></p>
       <button class="btn full" id="btnIn" type="button">Sign in</button>
       <p class="muted" style="margin-top:14px">
         No account yet? Run this once in the Supabase SQL editor:<br>
@@ -199,16 +217,16 @@ td.num{font-family:var(--mono);font-weight:700}
 
   <!-- ============ DASHBOARD ============ -->
   <section id="scMain" hidden>
-    <div class="tabs">
-      <button class="tab on" data-pane="paneOverview" type="button">Overview</button>
-      <button class="tab" data-pane="paneTrends" type="button">Trends</button>
-      <button class="tab" data-pane="panePlayers" type="button">Players</button>
-      <button class="tab" data-pane="paneThemes" type="button">Themes</button>
-      <button class="tab" data-pane="paneSetup" type="button">Settings</button>
+    <div class="tabs" role="tablist" aria-label="Dashboard sections">
+      <button class="tab on" data-pane="paneOverview" type="button" role="tab" aria-selected="true"  aria-controls="paneOverview">Overview</button>
+      <button class="tab"    data-pane="paneTrends"   type="button" role="tab" aria-selected="false" aria-controls="paneTrends">Trends</button>
+      <button class="tab"    data-pane="panePlayers"  type="button" role="tab" aria-selected="false" aria-controls="panePlayers">Players</button>
+      <button class="tab"    data-pane="paneThemes"   type="button" role="tab" aria-selected="false" aria-controls="paneThemes">Themes</button>
+      <button class="tab"    data-pane="paneSetup"    type="button" role="tab" aria-selected="false" aria-controls="paneSetup">Settings</button>
     </div>
 
     <!-- ---- overview ---- -->
-    <div id="paneOverview">
+    <div id="paneOverview" role="tabpanel" tabindex="0">
       <div class="card">
         <h2>Today</h2>
         <div class="tiles" id="tilesToday"></div>
@@ -229,7 +247,7 @@ td.num{font-family:var(--mono);font-weight:700}
     </div>
 
     <!-- ---- trends ---- -->
-    <div id="paneTrends" hidden>
+    <div id="paneTrends" role="tabpanel" tabindex="0" hidden>
       <div class="card">
         <h2>Games per day <span class="counter" id="trendRange"></span></h2>
         <div class="chart" id="chartGames"></div>
@@ -247,7 +265,7 @@ td.num{font-family:var(--mono);font-weight:700}
     </div>
 
     <!-- ---- players ---- -->
-    <div id="panePlayers" hidden>
+    <div id="panePlayers" role="tabpanel" tabindex="0" hidden>
       <div class="card">
         <h2>Players</h2>
         <div class="field" style="margin-bottom:10px">
@@ -258,7 +276,7 @@ td.num{font-family:var(--mono);font-weight:700}
     </div>
 
     <!-- ---- themes ---- -->
-    <div id="paneThemes" hidden>
+    <div id="paneThemes" role="tabpanel" tabindex="0" hidden>
       <div class="card">
         <h2>Theme difficulty</h2>
         <p class="muted" style="margin-bottom:12px">
@@ -269,7 +287,7 @@ td.num{font-family:var(--mono);font-weight:700}
     </div>
 
     <!-- ---- settings ---- -->
-    <div id="paneSetup" hidden>
+    <div id="paneSetup" role="tabpanel" tabindex="0" hidden>
       <div class="card">
         <h2>Versions in the wild</h2>
         <p class="muted" style="margin-bottom:12px">
@@ -287,7 +305,7 @@ td.num{font-family:var(--mono);font-weight:700}
             <button class="btn ghost full" id="btnSetMin" type="button">Apply minimum</button>
           </div>
         </div>
-        <p class="msg" id="mMinBuild"></p>
+        <p class="msg" id="mMinBuild" role="status" aria-live="polite"></p>
       </div>
 
       <div class="card">
@@ -311,7 +329,7 @@ td.num{font-family:var(--mono);font-weight:700}
           <button class="btn ghost" id="btnFindPlayer" type="button">Look up player</button>
           <button class="btn" id="btnResetPin" type="button">Reset their PIN</button>
         </div>
-        <p class="msg" id="mReset"></p>
+        <p class="msg" id="mReset" role="status" aria-live="polite"></p>
         <div class="keyout" id="findOut" hidden></div>
       </div>
 
@@ -338,7 +356,7 @@ function load(k,d){ try{ const v=JSON.parse(localStorage.getItem(k)); return v==
 function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
 function drop(k){ try{ localStorage.removeItem(k); }catch(e){} }
 const $=id=>document.getElementById(id);
-const esc=s=>String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 /* Supabase has two generations of API key.
      Legacy anon keys are JWTs and start "eyJ". They may be sent on both the
@@ -358,7 +376,7 @@ async function rpc(fn,body){
   if(!CONN) throw new Error("Not connected");
   const ac=("AbortController" in window)?new AbortController():null;
   const bail=ac?setTimeout(()=>ac.abort(),15000):null;
-  let r;
+  let r,text;
   try{
     r=await fetch(CONN.url+"/rest/v1/rpc/"+fn,{
       method:"POST",
@@ -366,8 +384,10 @@ async function rpc(fn,body){
       body:JSON.stringify(body||{}),
       signal:ac?ac.signal:undefined
     });
+    /* Read the body inside the timeout as well. Clearing the timer before
+       this means a stalled body would hang the call for ever. */
+    text=await r.text();
   } finally { if(bail) clearTimeout(bail); }
-  const text=await r.text();
   if(!r.ok){
     let detail=text;
     try{ const j=JSON.parse(text); detail=j.message||j.hint||j.details||text; }catch(e){}
@@ -427,7 +447,8 @@ $("btnIn").addEventListener("click",async()=>{
   const b=$("btnIn"); b.disabled=true; b.innerHTML='<span class="spin"></span> Checking';
   try{
     const res=await rpc("admin_login",{p_username:u,p_password:p});
-    if(!res.ok){
+    if(!res){ $("mLogin").textContent="The server sent an empty reply."; }
+    else if(!res.ok){
       $("mLogin").textContent = res.error==="LOCKED"
         ? "Too many wrong tries. Wait 15 minutes."
         : (res.error==="BAD_CREDENTIALS"
@@ -441,7 +462,7 @@ $("btnIn").addEventListener("click",async()=>{
       $("mLogin").textContent="";
       showScreen(); loadAll();
       $("chkAuto").checked=!!load("ws.admin.auto",false);
-      if($("chkAuto").checked) $("chkAuto").dispatchEvent(new Event("change")); refreshCfg();
+      if($("chkAuto").checked) $("chkAuto").dispatchEvent(new Event("change"));
     }
   }catch(e){ $("mLogin").textContent=friendly(e); }
   b.disabled=false; b.textContent="Sign in";
@@ -451,12 +472,24 @@ $("btnOut").addEventListener("click",()=>{
   drop(K_TOK); TOKEN=null; clearInterval(autoTimer); location.reload();
 });
 
-document.querySelectorAll(".tab").forEach(t=>{
-  t.addEventListener("click",()=>{
-    document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));
-    t.classList.add("on");
-    ["paneOverview","paneTrends","panePlayers","paneThemes","paneSetup"]
-      .forEach(id=>{ $(id).hidden = (id!==t.dataset.pane); });
+const TABS=Array.prototype.slice.call(document.querySelectorAll(".tab"));
+function openTab(t){
+  TABS.forEach(x=>{
+    const on = x===t;
+    x.classList.toggle("on",on);
+    x.setAttribute("aria-selected",on?"true":"false");
+    $(x.dataset.pane).hidden = !on;
+  });
+}
+TABS.forEach((t,i)=>{
+  t.addEventListener("click",()=>openTab(t));
+  /* Left and right arrows move along the row, the way tabs are expected to. */
+  t.addEventListener("keydown",e=>{
+    const step = e.key==="ArrowRight"?1 : e.key==="ArrowLeft"?-1 : 0;
+    if(!step) return;
+    e.preventDefault();
+    const n=TABS[(i+step+TABS.length)%TABS.length];
+    openTab(n); n.focus();
   });
 });
 
@@ -506,7 +539,7 @@ $("btnFindPlayer").addEventListener("click",async()=>{
   out.hidden=false; out.textContent="Looking\u2026";
   try{
     const r=await guard(await rpc("admin_find_player",{p_token:TOKEN,p_username:u}));
-    if(!r.ok){ out.textContent="Could not look that up."; return; }
+    if(!r||!r.ok){ out.textContent="Could not look that up."; return; }
     if(!r.found){ out.innerHTML='<b style="color:#C4161C">No player with that username.</b>'; return; }
     out.innerHTML='<b>'+esc(r.username)+'</b><br>'+
       'Joined '+esc(r.joined)+' &middot; last seen '+esc(r.last_seen)+'<br>'+
@@ -524,14 +557,15 @@ $("btnResetPin").addEventListener("click",async()=>{
   const b=$("btnResetPin"); b.disabled=true; b.innerHTML='<span class="spin"></span> Resetting';
   try{
     const r=await guard(await rpc("admin_reset_pin",{p_token:TOKEN,p_username:u,p_new_pin:pin}));
-    if(r.ok){
+    if(r&&r.ok){
       m.className="msg ok";
       m.textContent='Done. Tell '+r.username+' their temporary PIN is '+pin+'.';
       $("inRpPin").value="";
     }else{
-      m.textContent = r.error==="NO_PLAYER" ? "No player with that username."
-        : r.error==="BAD_PIN" ? "The PIN must be exactly 4 digits."
-        : "Could not reset: "+r.error;
+      const e2=(r&&r.error)||"unknown";
+      m.textContent = e2==="NO_PLAYER" ? "No player with that username."
+        : e2==="BAD_PIN" ? "The PIN must be exactly 4 digits."
+        : "Could not reset: "+e2;
     }
   }catch(e){ m.textContent=friendly(e); }
   b.disabled=false; b.textContent="Reset their PIN";
@@ -576,14 +610,18 @@ $("chkAuto").addEventListener("change",function(){
 
 async function loadAll(){
   try{
-    await Promise.all([loadOverview(),loadDaily(),loadPlayers(),loadThemes()]);
+    /* Overview must land first: it sets MIN_BUILD, which loadPlayers needs
+       to mark anyone below the minimum. Run in parallel and the build pills
+       are wrong on the first load. */
+    await loadOverview();
+    await Promise.all([loadDaily(),loadPlayers(),loadThemes()]);
     stampNow();
   }catch(e){ if(String(e.message)!=="expired") console.error(e); }
 }
 
 async function loadOverview(){
   const o=await guard(await rpc("admin_overview",{p_token:TOKEN}));
-  if(!o.ok) return;
+  if(!o||!o.ok) return;
   tiles($("tilesToday"),[
     {l:"Played today",     v:o.played_today, hi:true},
     {l:"Solved today",     v:o.solved_today},
@@ -604,12 +642,12 @@ async function loadOverview(){
   renderBuilds(o);
   table($("tblTop"),["#","Player","Points","Time"],o.top_today||[],
     (r,i)=>'<tr><td class="num">'+(i+1)+'</td><td>'+esc(r.username)+
-           '</td><td class="num">'+r.total_points+'</td><td class="num">'+fmtT(r.time_sec)+'</td></tr>');
+           '</td><td class="num">'+esc(r.total_points)+'</td><td class="num">'+fmtT(r.time_sec)+'</td></tr>');
 
   const f=await guard(await rpc("admin_flagged",{p_token:TOKEN}));
   table($("tblFlagged"),["Player","Date","Time","Points","Theme"],(f&&f.rows)||[],
     r=>'<tr><td>'+esc(r.username)+'</td><td class="num">'+esc(r.play_date)+
-       '</td><td class="num">'+fmtT(r.time_sec)+'</td><td class="num">'+r.total_points+
+       '</td><td class="num">'+fmtT(r.time_sec)+'</td><td class="num">'+esc(r.total_points)+
        '</td><td>'+esc(r.theme)+'</td></tr>');
 }
 
@@ -628,7 +666,7 @@ function renderBuilds(o){
       const b=Number(r.build)||0;
       const cls=!b?"":(MIN_BUILD&&b<MIN_BUILD?"bad":"good");
       const label=!b?"never signed in":(MIN_BUILD&&b<MIN_BUILD?"below minimum":"current");
-      return '<tr><td class="num">'+(b||"—")+'</td><td class="num">'+r.players+
+      return '<tr><td class="num">'+(b||"—")+'</td><td class="num">'+esc(r.players)+
              '</td><td><span class="pill '+cls+'">'+label+'</span></td></tr>';
     });
 }
@@ -640,43 +678,47 @@ $("btnSetMin").addEventListener("click",async()=>{
   if(!confirm("Force everyone below build "+v+" to reload?\n\nThis only acts the next time each player opens the game.")) return;
   try{
     const r=await guard(await rpc("admin_set_min_build",{p_token:TOKEN,p_build:v}));
-    if(r.ok){ m.className="msg ok"; m.textContent="Minimum build is now "+r.min_build+"."; loadOverview(); }
-    else m.textContent="Could not set that: "+r.error;
+    if(r&&r.ok){ m.className="msg ok"; m.textContent="Minimum build is now "+r.min_build+"."; loadOverview(); }
+    else m.textContent="Could not set that: "+((r&&r.error)||"unknown");
   }catch(e){ m.textContent=friendly(e); }
 });
 
 async function loadDaily(){
   const d=await guard(await rpc("admin_daily",{p_token:TOKEN,p_days:30}));
-  if(!d.ok) return;
+  if(!d||!d.ok) return;
   const rows=d.rows||[];
   $("trendRange").textContent="last "+rows.length+" days";
   drawChart($("chartGames"),$("chartGamesX"),rows,"games");
   drawChart($("chartSignups"),$("chartSignupsX"),rows,"signups");
   table($("tblDaily"),["Date","Games","Solved","Avg points","Avg time","Sign-ups"],
     rows.slice().reverse(),
-    r=>'<tr><td class="num">'+esc(r.d)+'</td><td class="num">'+r.games+
-       '</td><td class="num">'+r.solved+'</td><td class="num">'+r.avg_points+
-       '</td><td class="num">'+fmtT(r.avg_time)+'</td><td class="num">'+r.signups+'</td></tr>');
+    r=>'<tr><td class="num">'+esc(r.d)+'</td><td class="num">'+esc(r.games)+
+       '</td><td class="num">'+esc(r.solved)+'</td><td class="num">'+esc(r.avg_points)+
+       '</td><td class="num">'+fmtT(r.avg_time)+'</td><td class="num">'+esc(r.signups)+'</td></tr>');
 }
 
-let searchT=null;
+let searchT=null, searchSeq=0;
 $("inSearch").addEventListener("input",()=>{ clearTimeout(searchT); searchT=setTimeout(loadPlayers,300); });
 
 async function loadPlayers(){
   const q=$("inSearch").value.trim();
+  const seq=++searchSeq;
   const p=await guard(await rpc("admin_players",{p_token:TOKEN,p_search:q||null,p_limit:200}));
-  if(!p.ok) return;
+  /* A newer search has already answered. Replies can arrive out of order,
+     so without this the table can end up showing an older query's rows. */
+  if(seq!==searchSeq) return;
+  if(!p||!p.ok) return;
   table($("tblPlayers"),["Player","Joined","Games","Solved","Points","Best","Last played","Build","Recovery"],
     p.rows||[],
     r=>'<tr><td><b>'+esc(r.username)+'</b></td><td class="num">'+esc(r.joined)+
-       '</td><td class="num">'+r.games+'</td><td class="num">'+r.solved+
-       '</td><td class="num">'+r.total_points+'</td><td class="num">'+fmtT(r.best_time)+
+       '</td><td class="num">'+esc(r.games)+'</td><td class="num">'+esc(r.solved)+
+       '</td><td class="num">'+esc(r.total_points)+'</td><td class="num">'+fmtT(r.best_time)+
        '</td><td class="num">'+esc(r.last_played||"—")+
        '</td><td class="num">'+
          (r.last_build
            ? (MIN_BUILD && r.last_build<MIN_BUILD
-               ? '<span class="pill bad">'+r.last_build+'</span>'
-               : r.last_build)
+               ? '<span class="pill bad">'+esc(r.last_build)+'</span>'
+               : esc(r.last_build))
            : '—')+
        '</td><td>'+(r.has_recovery?'<span class="pill good">set</span>':'<span class="pill">none</span>')+
        '</td></tr>');
@@ -684,15 +726,40 @@ async function loadPlayers(){
 
 async function loadThemes(){
   const t=await guard(await rpc("admin_themes",{p_token:TOKEN}));
-  if(!t.ok) return;
+  if(!t||!t.ok) return;
   table($("tblThemes"),["Theme","Plays","Solved","Completion","Avg time"],t.rows||[],
     r=>{
       const cls=r.pct>=70?"good":(r.pct>=40?"warn":"bad");
-      return '<tr><td>'+esc(r.theme)+'</td><td class="num">'+r.plays+
-             '</td><td class="num">'+r.solved+'</td><td><span class="pill '+cls+'">'+r.pct+'%</span></td>'+
+      return '<tr><td>'+esc(r.theme)+'</td><td class="num">'+esc(r.plays)+
+             '</td><td class="num">'+esc(r.solved)+'</td><td><span class="pill '+cls+'">'+esc(r.pct)+'%</span></td>'+
              '<td class="num">'+fmtT(r.avg_time)+'</td></tr>';
     });
 }
+
+/* ==========================================================
+   KEYBOARD AND VISIBILITY
+   ========================================================== */
+/* Enter in a field presses the button that field belongs to. Without this
+   the whole panel is mouse-only, because there is no <form> anywhere. */
+function enterFires(inputIds,btnId){
+  inputIds.forEach(id=>$(id).addEventListener("keydown",e=>{
+    if(e.key!=="Enter"||e.isComposing) return;
+    e.preventDefault();
+    $(btnId).click();
+  }));
+}
+enterFires(["inUrl","inKey"],"btnConnect");
+enterFires(["inUser","inPass"],"btnIn");
+enterFires(["inMinBuild"],"btnSetMin");
+enterFires(["inRpUser"],"btnFindPlayer");
+enterFires(["inRpPin"],"btnResetPin");
+
+/* Auto-refresh is paused while the tab is hidden, so the figures on screen
+   can be an hour stale when you come back. Catch up on return. */
+document.addEventListener("visibilitychange",()=>{
+  if(document.hidden || !TOKEN || !$("chkAuto").checked) return;
+  if(Date.now()-lastLoad > 60000) loadAll();
+});
 
 /* ==========================================================
    START
@@ -700,7 +767,7 @@ async function loadThemes(){
 showScreen();
 if(TOKEN){
   rpc("admin_overview",{p_token:TOKEN}).then(o=>{
-    if(o&&o.ok){ $("whoName").textContent="admin"; loadAll(); refreshCfg(); }
+    if(o&&o.ok){ $("whoName").textContent="admin"; loadAll(); }
     else { drop(K_TOK); TOKEN=null; showScreen(); }
   }).catch(()=>{ drop(K_TOK); TOKEN=null; showScreen(); });
 }
