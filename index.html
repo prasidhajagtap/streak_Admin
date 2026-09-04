@@ -139,6 +139,46 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
   span.spin,.refbox button.spin svg{animation:none}
 }
 
+/* ---------- announcement composer ---------- */
+.seg{display:flex;gap:7px;margin-bottom:14px}
+.seg button{flex:1;padding:11px 14px;border-radius:11px;border:1.5px solid var(--line);
+  background:var(--paper);font-size:12px;font-weight:800;letter-spacing:.06em;
+  text-transform:uppercase;color:var(--grey-dk)}
+.seg button.on{background:var(--maroon);border-color:var(--maroon);color:#fff}
+.emoji{display:flex;flex-wrap:wrap;gap:5px;margin:-4px 0 12px}
+.emoji button{font-size:17px;line-height:1;padding:6px 8px;border-radius:9px;
+  border:1.5px solid var(--line);background:var(--cream)}
+.emoji button:hover{background:#fff;border-color:var(--orange)}
+.drop{border:2px dashed var(--line);border-radius:14px;padding:22px 16px;text-align:center;
+  background:var(--cream);cursor:pointer}
+.drop:hover,.drop.over{border-color:var(--orange);background:#fff}
+.drop p{margin:0;font-size:13px;font-weight:700;color:var(--grey-dk)}
+.drop small{display:block;margin-top:5px;font-size:11px;color:var(--grey);font-weight:600}
+.drop input{display:none}
+.shot{margin-top:12px;display:flex;gap:12px;align-items:flex-start}
+.shot img{max-width:150px;border-radius:10px;border:1.5px solid var(--line)}
+.shot .meta{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--grey-dk);line-height:1.7}
+
+/* the mock of how it will look inside the game */
+.bnprev{border-radius:14px;padding:14px 16px;border:1.5px solid;display:flex;gap:12px;
+  align-items:flex-start;margin-bottom:4px}
+.bnprev .bi{font-size:19px;line-height:1.2}
+.bnprev b{display:block;font-size:14px;margin-bottom:3px}
+.bnprev p{margin:0;font-size:13px;line-height:1.55;white-space:pre-wrap}
+.bnprev img{width:100%;border-radius:9px;display:block}
+.bnprev .cta{display:inline-block;margin-top:9px;font-size:11px;font-weight:800;
+  letter-spacing:.09em;text-transform:uppercase;padding:6px 12px;border-radius:8px;
+  background:rgba(0,0,0,.08)}
+.bnprev.info   {background:#FFF6E4;border-color:#F0D9A8;color:#5A3B0B}
+.bnprev.success{background:#DCF0E4;border-color:#A8D8BC;color:#1C5334}
+.bnprev.warn   {background:#FFF3D6;border-color:#EFD08A;color:#6B5100}
+.bnprev.urgent {background:#F7D9D9;border-color:#E2A7A7;color:#8C1220}
+.phone{max-width:380px;margin:0 auto;background:var(--cream);border:1.5px solid var(--line);
+  border-radius:16px;padding:12px}
+.phone .fake{margin-top:10px;height:52px;border-radius:10px;
+  background:repeating-linear-gradient(45deg,var(--line),var(--line) 6px,transparent 6px,transparent 12px);
+  opacity:.5}
+
 /* ---------- bar chart ---------- */
 .chart{display:flex;align-items:flex-end;gap:3px;height:150px;padding-top:8px}
 .chart .bar{flex:1;min-width:4px;background:linear-gradient(180deg,var(--orange),var(--maroon));
@@ -222,6 +262,7 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
       <button class="tab"    data-pane="paneTrends"   type="button" role="tab" aria-selected="false" aria-controls="paneTrends">Trends</button>
       <button class="tab"    data-pane="panePlayers"  type="button" role="tab" aria-selected="false" aria-controls="panePlayers">Players</button>
       <button class="tab"    data-pane="paneThemes"   type="button" role="tab" aria-selected="false" aria-controls="paneThemes">Themes</button>
+      <button class="tab"    data-pane="paneNews"     type="button" role="tab" aria-selected="false" aria-controls="paneNews">Announce</button>
       <button class="tab"    data-pane="paneSetup"    type="button" role="tab" aria-selected="false" aria-controls="paneSetup">Settings</button>
     </div>
 
@@ -283,6 +324,107 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
           A low completion rate means that theme is too hard, or its words are too obscure.
         </p>
         <div class="tblwrap"><table id="tblThemes"></table></div>
+      </div>
+    </div>
+
+    <!-- ---- announcements ---- -->
+    <div id="paneNews" role="tabpanel" tabindex="0" hidden>
+      <div class="card">
+        <h2>New announcement</h2>
+        <p class="muted" style="margin-bottom:14px">
+          Everyone who opens the game sees this, every time, until you stop it.
+          Pick text or a picture &mdash; not both.
+        </p>
+
+        <div class="seg" role="group" aria-label="Announcement type">
+          <button type="button" id="segText"  class="on">Text</button>
+          <button type="button" id="segImage">Picture</button>
+        </div>
+
+        <div id="wrapText">
+          <div class="field">
+            <label for="inBnTitle">Heading <span class="counter" id="cTitle">0/60</span></label>
+            <input id="inBnTitle" type="text" maxlength="60" placeholder="Today's puzzle is live 🎉">
+          </div>
+          <div class="field">
+            <label for="inBnBody">Message <span class="counter" id="cBody">0/240</span></label>
+            <textarea id="inBnBody" maxlength="240" placeholder="Five words, five minutes. Beat your best time 🏆"></textarea>
+          </div>
+          <p class="eyebrow">Tap to add</p>
+          <div class="emoji" id="emojiBar"></div>
+        </div>
+
+        <div id="wrapImage" hidden>
+          <label class="drop" id="drop" for="inFile">
+            <input id="inFile" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+            <p>Tap to choose a picture, or drag one here</p>
+            <small>PNG, JPG or WEBP. It is shrunk automatically before saving.</small>
+          </label>
+          <div class="shot" id="shot" hidden>
+            <img id="shotImg" alt="Chosen picture">
+            <div class="meta" id="shotMeta"></div>
+          </div>
+          <div class="field" style="margin-top:13px">
+            <label for="inBnAlt">Describe the picture in words</label>
+            <input id="inBnAlt" type="text" maxlength="120" placeholder="Diwali offer poster">
+          </div>
+          <p class="muted" style="margin:-6px 0 6px;font-size:12px">
+            Needed for players using a screen reader, and shown if the picture fails to load.
+          </p>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="inBnTone">Colour</label>
+            <select id="inBnTone">
+              <option value="info">Info &mdash; cream</option>
+              <option value="success">Good news &mdash; green</option>
+              <option value="warn">Careful &mdash; yellow</option>
+              <option value="urgent">Urgent &mdash; red</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="inBnLinkLabel">Button text (optional)</label>
+            <input id="inBnLinkLabel" type="text" maxlength="24" placeholder="See details">
+          </div>
+        </div>
+        <div class="field">
+          <label for="inBnLink">Link opened on tap (optional)</label>
+          <input id="inBnLink" type="text" placeholder="https://example.com/offer" autocomplete="off">
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="inBnFrom">Show from</label>
+            <input id="inBnFrom" type="datetime-local">
+          </div>
+          <div class="field">
+            <label for="inBnTo">Stop showing at (optional)</label>
+            <input id="inBnTo" type="datetime-local">
+          </div>
+        </div>
+        <p class="muted" style="margin:-6px 0 14px;font-size:12px">
+          Times are your own clock &mdash; <b id="tzName">&mdash;</b>. Leave the second box
+          empty to keep it up until you stop it by hand.
+        </p>
+
+        <p class="eyebrow">How it will look</p>
+        <div class="phone">
+          <div class="bnprev info" id="bnPrev"></div>
+          <div class="fake"></div>
+          <div class="fake"></div>
+        </div>
+
+        <p class="msg" id="mBanner" role="status" aria-live="polite"></p>
+        <div class="row2" style="margin-top:10px">
+          <button class="btn ghost" id="btnBnClear" type="button">Clear the form</button>
+          <button class="btn" id="btnBnPublish" type="button">Publish</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>All announcements</h2>
+        <div class="tblwrap"><table id="tblBanners"></table></div>
       </div>
     </div>
 
@@ -614,7 +756,7 @@ async function loadAll(){
        to mark anyone below the minimum. Run in parallel and the build pills
        are wrong on the first load. */
     await loadOverview();
-    await Promise.all([loadDaily(),loadPlayers(),loadThemes()]);
+    await Promise.all([loadDaily(),loadPlayers(),loadThemes(),loadBanners()]);
     stampNow();
   }catch(e){ if(String(e.message)!=="expired") console.error(e); }
 }
@@ -735,6 +877,325 @@ async function loadThemes(){
              '<td class="num">'+fmtT(r.avg_time)+'</td></tr>';
     });
 }
+
+/* ==========================================================
+   ANNOUNCEMENTS
+   One banner shows inside the game to every player who opens
+   it, over and over, until an admin stops it or its end time
+   passes. A picture is shrunk here in the browser and stored
+   as text on the row, so there is no bucket to set up.
+   ========================================================== */
+const BN={id:null,kind:"text",image:null};
+const IMG_MAX_W=1200, IMG_TARGET=180*1024, IMG_HARD=400*1024;
+const EMOJI=["🎉","🎊","🏆","🔥","⭐","🎯","🧩","📢","⚠️","🚨","🎁","💡","👏","😀","😍","🙌","✅","⏰","🗓️","🇮🇳"];
+
+$("tzName").textContent =
+  (Intl.DateTimeFormat().resolvedOptions().timeZone||"your local time");
+
+/* ---------- date helpers ---------- */
+function toLocalInput(iso){
+  if(!iso) return "";
+  const d=new Date(iso); if(isNaN(d.getTime())) return "";
+  const p=n=>String(n).padStart(2,"0");
+  return d.getFullYear()+"-"+p(d.getMonth()+1)+"-"+p(d.getDate())+
+         "T"+p(d.getHours())+":"+p(d.getMinutes());
+}
+function fromLocalInput(v){
+  if(!v) return null;
+  const d=new Date(v); return isNaN(d.getTime())?null:d.toISOString();
+}
+function whenText(r){
+  const f=r.starts_at?toLocalInput(r.starts_at).replace("T"," "):"—";
+  const t=r.ends_at?toLocalInput(r.ends_at).replace("T"," "):"no end";
+  return f+"  →  "+t;
+}
+
+/* ---------- text or picture ---------- */
+function setKind(k){
+  BN.kind=k;
+  $("segText").classList.toggle("on",k==="text");
+  $("segImage").classList.toggle("on",k==="image");
+  $("wrapText").hidden  = k!=="text";
+  $("wrapImage").hidden = k!=="image";
+  paintPreview();
+}
+$("segText").addEventListener("click",()=>setKind("text"));
+$("segImage").addEventListener("click",()=>setKind("image"));
+
+/* ---------- emoji ---------- */
+let lastField=null;
+["inBnTitle","inBnBody"].forEach(id=>{
+  $(id).addEventListener("focus",()=>{ lastField=$(id); });
+});
+$("emojiBar").innerHTML=EMOJI.map(e=>
+  '<button type="button" aria-label="Add '+esc(e)+'">'+esc(e)+'</button>').join("");
+$("emojiBar").addEventListener("click",e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  const f=lastField||$("inBnBody");
+  /* drop it in at the cursor, not at the end */
+  const s=f.selectionStart==null?f.value.length:f.selectionStart;
+  const t=f.selectionEnd==null?f.value.length:f.selectionEnd;
+  const ch=b.textContent;
+  if(f.value.length-(t-s)+ch.length > f.maxLength){ return; }
+  f.value=f.value.slice(0,s)+ch+f.value.slice(t);
+  f.focus(); f.setSelectionRange(s+ch.length,s+ch.length);
+  f.dispatchEvent(new Event("input"));
+});
+
+/* ---------- picture: shrink in the browser ---------- */
+function shrinkImage(file){
+  return new Promise((res,rej)=>{
+    if(!/^image\//.test(file.type||"")) return rej(new Error("That file is not a picture."));
+    const fr=new FileReader();
+    fr.onerror=()=>rej(new Error("Could not read that file."));
+    fr.onload=()=>{
+      const img=new Image();
+      img.onerror=()=>rej(new Error("That picture looks damaged."));
+      img.onload=()=>{
+        const scale=Math.min(1,IMG_MAX_W/img.width);
+        const w=Math.max(1,Math.round(img.width*scale));
+        const h=Math.max(1,Math.round(img.height*scale));
+        const cv=document.createElement("canvas"); cv.width=w; cv.height=h;
+        const cx=cv.getContext("2d");
+        /* a transparent PNG would go black as JPEG, so lay white down first */
+        cx.fillStyle="#FFFFFF"; cx.fillRect(0,0,w,h);
+        cx.drawImage(img,0,0,w,h);
+        let out="",q=0.82;
+        for(let i=0;i<6;i++){
+          out=cv.toDataURL("image/jpeg",q);
+          if(b64bytes(out)<=IMG_TARGET) break;
+          q-=0.12;
+        }
+        res({data:out,w:w,h:h,bytes:b64bytes(out),animated:/gif/i.test(file.type)});
+      };
+      img.src=String(fr.result);
+    };
+    fr.readAsDataURL(file);
+  });
+}
+function b64bytes(dataUri){
+  const b=String(dataUri).split(",")[1]||"";
+  return Math.round(b.length*3/4);
+}
+const kb=n=>Math.round(n/1024)+" KB";
+
+async function takeFile(file){
+  const m=$("mBanner"); m.className="msg";
+  if(!file) return;
+  m.textContent="Shrinking the picture…";
+  try{
+    const r=await shrinkImage(file);
+    if(r.bytes>IMG_HARD){
+      m.textContent="Even after shrinking this is "+kb(r.bytes)+
+        ". Please use a simpler or smaller picture.";
+      return;
+    }
+    BN.image=r.data;
+    $("shot").hidden=false;
+    $("shotImg").src=r.data;
+    $("shotMeta").innerHTML=
+      r.w+" x "+r.h+"<br>"+kb(r.bytes)+
+      (r.bytes>IMG_TARGET?'<br><b style="color:#B8860B">a little heavy</b>':'<br><b style="color:#2E7D4F">good size</b>')+
+      (r.animated?'<br><b style="color:#B8860B">movement is lost</b>':"");
+    m.textContent="";
+    paintPreview();
+  }catch(e){ m.textContent=e.message||"Could not use that picture."; }
+}
+$("inFile").addEventListener("change",e=>{ takeFile(e.target.files&&e.target.files[0]); });
+["dragenter","dragover"].forEach(ev=>$("drop").addEventListener(ev,e=>{
+  e.preventDefault(); $("drop").classList.add("over"); }));
+["dragleave","drop"].forEach(ev=>$("drop").addEventListener(ev,e=>{
+  e.preventDefault(); $("drop").classList.remove("over"); }));
+$("drop").addEventListener("drop",e=>{
+  const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];
+  if(f) takeFile(f);
+});
+
+/* ---------- live preview ---------- */
+const ICON={info:"📢",success:"🎉",warn:"⚠️",urgent:"🚨"};
+function paintPreview(){
+  const el=$("bnPrev"), tone=$("inBnTone").value;
+  el.className="bnprev "+tone;
+  const label=$("inBnLinkLabel").value.trim(), link=$("inBnLink").value.trim();
+  const cta=(link&&label)?'<span class="cta">'+esc(label)+'</span>':"";
+  if(BN.kind==="image"){
+    el.innerHTML = BN.image
+      ? '<div style="width:100%"><img src="'+esc(BN.image)+'" alt="'+
+        esc($("inBnAlt").value.trim()||"announcement picture")+'">'+cta+'</div>'
+      : '<div class="bi">🖼️</div><div><b>No picture chosen</b><p>Pick one above to see it here.</p></div>';
+  }else{
+    const t=$("inBnTitle").value.trim(), b=$("inBnBody").value.trim();
+    el.innerHTML='<div class="bi">'+(ICON[tone]||"📢")+'</div><div style="flex:1">'+
+      '<b>'+esc(t||"Your heading here")+'</b>'+
+      '<p>'+esc(b||"Your message here.")+'</p>'+cta+'</div>';
+  }
+}
+["inBnTitle","inBnBody","inBnTone","inBnLink","inBnLinkLabel","inBnAlt"]
+  .forEach(id=>$(id).addEventListener("input",paintPreview));
+$("inBnTone").addEventListener("change",paintPreview);
+$("inBnTitle").addEventListener("input",()=>{ $("cTitle").textContent=$("inBnTitle").value.length+"/60"; });
+$("inBnBody").addEventListener("input",()=>{ $("cBody").textContent=$("inBnBody").value.length+"/240"; });
+
+/* ---------- clear ---------- */
+function clearForm(){
+  BN.id=null; BN.image=null;
+  ["inBnTitle","inBnBody","inBnAlt","inBnLink","inBnLinkLabel","inBnTo"].forEach(id=>$(id).value="");
+  $("inBnTone").value="info";
+  $("inBnFrom").value=toLocalInput(new Date().toISOString());
+  $("shot").hidden=true; $("shotImg").removeAttribute("src"); $("inFile").value="";
+  $("cTitle").textContent="0/60"; $("cBody").textContent="0/240";
+  $("btnBnPublish").textContent="Publish";
+  $("mBanner").className="msg"; $("mBanner").textContent="";
+  setKind("text");
+}
+$("btnBnClear").addEventListener("click",clearForm);
+
+/* ---------- publish ---------- */
+$("btnBnPublish").addEventListener("click",async()=>{
+  const m=$("mBanner"); m.className="msg";
+  const title=$("inBnTitle").value.trim(), body=$("inBnBody").value.trim();
+  const alt=$("inBnAlt").value.trim();
+  const link=$("inBnLink").value.trim(), label=$("inBnLinkLabel").value.trim();
+
+  if(BN.kind==="text" && !title && !body){ m.textContent="Write a heading or a message."; return; }
+  if(BN.kind==="image" && !BN.image){ m.textContent="Choose a picture first."; return; }
+  if(BN.kind==="image" && !alt){ m.textContent="Describe the picture in words."; return; }
+  if(link && !/^https:\/\/\S+$/i.test(link)){ m.textContent="The link must start with https://"; return; }
+  if(link && !label){ m.textContent="Give the button some text, or remove the link."; return; }
+  if(label && !link){ m.textContent="Add a link, or remove the button text."; return; }
+
+  const from=fromLocalInput($("inBnFrom").value)||new Date().toISOString();
+  const to=fromLocalInput($("inBnTo").value);
+  if(to && new Date(to)<=new Date(from)){ m.textContent="The end time must be after the start time."; return; }
+  if(to && new Date(to)<=new Date()){ m.textContent="That end time has already passed."; return; }
+
+  const live=BANNERS.filter(r=>bnStatus(r).t==="showing now" && r.id!==BN.id).length;
+  const warn=live?"\n\nThis will take over from the announcement showing now.":"";
+  if(!confirm("Publish this to every player?"+warn)) return;
+
+  const b=$("btnBnPublish"); b.disabled=true; b.innerHTML='<span class="spin"></span> Publishing';
+  try{
+    const r=await guard(await rpc("admin_banner_save",{
+      p_token:TOKEN, p_id:BN.id,
+      p_kind:BN.kind,
+      p_title:BN.kind==="text"?(title||null):null,
+      p_body :BN.kind==="text"?(body||null):null,
+      p_image:BN.kind==="image"?BN.image:null,
+      p_image_alt:BN.kind==="image"?alt:null,
+      p_tone:$("inBnTone").value,
+      p_link_url:link||null, p_link_label:label||null,
+      p_starts_at:from, p_ends_at:to, p_active:true }));
+    if(r&&r.ok){
+      m.className="msg ok";
+      m.textContent = BN.id?"Updated. Players see it on their next visit."
+                           :"Published. Players see it on their next visit.";
+      clearForm(); loadBanners();
+    } else {
+      m.textContent="Could not publish: "+((r&&r.error)||"unknown");
+    }
+  }catch(e){ m.textContent=friendly(e); }
+  b.disabled=false; b.textContent="Publish";
+});
+
+/* ---------- the list ---------- */
+let BANNERS=[];
+function bnStatus(r){
+  if(!r.active) return {k:"",t:"stopped"};
+  const now=Date.now();
+  const s=r.starts_at?new Date(r.starts_at).getTime():0;
+  const e=r.ends_at?new Date(r.ends_at).getTime():Infinity;
+  if(now<s) return {k:"warn",t:"waiting"};
+  if(now>=e) return {k:"",t:"finished"};
+  return {k:"good",t:"showing now"};
+}
+async function loadBanners(){
+  const r=await guard(await rpc("admin_banners",{p_token:TOKEN,p_limit:60}));
+  if(!r||!r.ok) return;
+  /* newest first, and only the top live one is really on screen in the game */
+  BANNERS=(r.rows||[]).slice().sort((a,b)=>
+    String(b.starts_at||"").localeCompare(String(a.starts_at||"")));
+  let seenLive=false;
+  table($("tblBanners"),["Announcement","When","Status",""],BANNERS,r2=>{
+    const st=bnStatus(r2);
+    let label=st.t, cls=st.k;
+    if(st.t==="showing now"){
+      if(seenLive){ label="live, waiting its turn"; cls="warn"; }
+      seenLive=true;
+    }
+    const what = r2.kind==="image"
+      ? '🖼️ <b>Picture</b><br><span class="muted">'+esc(r2.image_alt||"no description")+'</span>'
+      : '<b>'+esc(r2.title||"(no heading)")+'</b><br><span class="muted">'+
+        esc(String(r2.body||"").slice(0,60))+'</span>';
+    return '<tr><td>'+what+'</td>'+
+      '<td class="num" style="white-space:nowrap">'+esc(whenText(r2))+'</td>'+
+      '<td><span class="pill '+cls+'">'+esc(label)+'</span></td>'+
+      '<td style="white-space:nowrap">'+
+        '<button class="btn ghost sm" data-act="edit" data-id="'+esc(r2.id)+'">Edit</button> '+
+        '<button class="btn ghost sm" data-act="'+(r2.active?"stop":"start")+'" data-id="'+esc(r2.id)+'">'+
+          (r2.active?"Stop":"Start")+'</button> '+
+        '<button class="btn ghost sm" data-act="del" data-id="'+esc(r2.id)+'">Delete</button>'+
+      '</td></tr>';
+  });
+}
+
+/* the table is rebuilt on every load, so listen on the document instead */
+document.addEventListener("click",async e=>{
+  const b=e.target.closest("[data-act]"); if(!b) return;
+  let row=BANNERS.filter(x=>String(x.id)===b.dataset.id)[0];
+  if(!row) return;
+  const m=$("mBanner"); m.className="msg";
+
+  if(b.dataset.act==="edit"){
+    /* The list leaves the picture out so it stays small. Fetch the whole
+       row only for the one being edited. */
+    let full=row;
+    if(row.kind==="image"){
+      b.disabled=true;
+      try{ const g=await guard(await rpc("admin_banner_get",{p_token:TOKEN,p_id:row.id}));
+           if(g&&g.ok&&g.row) full=g.row; }
+      catch(err){ m.textContent=friendly(err); b.disabled=false; return; }
+      b.disabled=false;
+    }
+    row=full;
+    BN.id=row.id; BN.image=row.image||null;
+    setKind(row.kind==="image"?"image":"text");
+    $("inBnTitle").value=row.title||""; $("inBnBody").value=row.body||"";
+    $("inBnAlt").value=row.image_alt||""; $("inBnTone").value=row.tone||"info";
+    $("inBnLink").value=row.link_url||""; $("inBnLinkLabel").value=row.link_label||"";
+    $("inBnFrom").value=toLocalInput(row.starts_at);
+    $("inBnTo").value=toLocalInput(row.ends_at);
+    $("cTitle").textContent=$("inBnTitle").value.length+"/60";
+    $("cBody").textContent=$("inBnBody").value.length+"/240";
+    if(row.image){ $("shot").hidden=false; $("shotImg").src=row.image;
+      $("shotMeta").innerHTML=kb(b64bytes(row.image))+"<br>already saved"; }
+    else { $("shot").hidden=true; }
+    $("btnBnPublish").textContent="Save changes";
+    paintPreview();
+    $("inBnTitle").scrollIntoView({behavior:"smooth",block:"center"});
+    return;
+  }
+
+  if(b.dataset.act==="del"){
+    if(!confirm("Delete this announcement for good?")) return;
+    try{
+      const r=await guard(await rpc("admin_banner_delete",{p_token:TOKEN,p_id:row.id}));
+      if(r&&r.ok){ if(BN.id===row.id) clearForm(); loadBanners(); }
+      else m.textContent="Could not delete: "+((r&&r.error)||"unknown");
+    }catch(err){ m.textContent=friendly(err); }
+    return;
+  }
+
+  const on=b.dataset.act==="start";
+  if(on && !confirm("Show this to every player again?")) return;
+  if(!on && !confirm("Stop showing this to players?")) return;
+  try{
+    const r=await guard(await rpc("admin_banner_active",{p_token:TOKEN,p_id:row.id,p_active:on}));
+    if(r&&r.ok) loadBanners();
+    else m.textContent="Could not change that: "+((r&&r.error)||"unknown");
+  }catch(err){ m.textContent=friendly(err); }
+});
+
+clearForm();
 
 /* ==========================================================
    KEYBOARD AND VISIBILITY
