@@ -240,8 +240,12 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
         <div class="tblwrap"><table id="tblTop"></table></div>
       </div>
       <div class="card">
-        <h2>Flagged as implausible</h2>
-        <p class="muted" style="margin-bottom:10px">Solves under 20 seconds. Worth a look before any prize is handed out.</p>
+        <h2>Needs review</h2>
+        <p class="muted" style="margin-bottom:10px">
+          Solves under 20 seconds. This means <b>statistically unlikely, not proven</b>.
+          The grid is made in the player's browser, so the server cannot replay it and
+          cannot show a score is fake. Worth a look before any prize is handed out
+          &mdash; it is not evidence on its own.</p>
         <div class="tblwrap"><table id="tblFlagged"></table></div>
       </div>
     </div>
@@ -293,7 +297,10 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
         <p class="muted" style="margin-bottom:12px">
           Which build each player last signed in with. Setting a minimum makes
           anyone below it reload themselves the next time they open the game.
-          It cannot reach a browser that is closed &mdash; nothing can.
+          It cannot reach a browser that is closed &mdash; nothing can.<br><br>
+          Reaches every copy from <b>build 3</b> up. Builds 1&ndash;2 ignore this
+          setting but update themselves anyway. Copies from before 27 Aug 2026
+          have no update check at all and cannot be reached by anything.
         </p>
         <div class="tblwrap"><table id="tblBuilds"></table></div>
         <div class="row2" style="margin-top:14px">
