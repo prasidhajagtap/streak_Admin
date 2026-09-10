@@ -120,6 +120,13 @@ td.num{font-family:var(--mono);font-weight:700}
 .pill.good{background:#DCF0E4;color:var(--ok)}
 .pill.bad{background:#F7D9D9;color:var(--red)}
 .pill.warn{background:#FFF3D6;color:var(--warn)}
+/* Added 10 Sep with the Sprint and Streaks panels. .pill.warn already existed
+   as a small inline chip; these two did not exist at all and the new tables
+   referenced them, which would have rendered as unstyled default text. */
+td.mono,.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
+p.warn{margin:12px 0 0;padding:10px 12px;border-radius:10px;
+  background:#FFF3D6;border:1px solid var(--gold-lt);
+  color:#6B4E06;font-size:12.5px;line-height:1.55}
 
 /* ---------- small bits ---------- */
 .counter{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--grey);
@@ -222,6 +229,8 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
       <button class="tab"    data-pane="paneTrends"   type="button" role="tab" aria-selected="false" aria-controls="paneTrends">Trends</button>
       <button class="tab"    data-pane="panePlayers"  type="button" role="tab" aria-selected="false" aria-controls="panePlayers">Players</button>
       <button class="tab"    data-pane="paneThemes"   type="button" role="tab" aria-selected="false" aria-controls="paneThemes">Themes</button>
+      <button class="tab"    data-pane="paneSprint"   type="button" role="tab" aria-selected="false" aria-controls="paneSprint">Sprint</button>
+      <button class="tab"    data-pane="paneStreaks"  type="button" role="tab" aria-selected="false" aria-controls="paneStreaks">Streaks</button>
       <button class="tab"    data-pane="paneSetup"    type="button" role="tab" aria-selected="false" aria-controls="paneSetup">Settings</button>
     </div>
 
@@ -234,6 +243,17 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
       <div class="card">
         <h2>All time</h2>
         <div class="tiles" id="tilesAll"></div>
+      </div>
+      <div class="card">
+        <h2>Data health</h2>
+        <p class="muted" style="margin-bottom:12px">
+          The daily clock was ten minutes until 21 August and five after it. Both eras
+          award 300 points times the fraction of clock left, so only the clock changed &mdash;
+          but that doubled what a second costs, and nothing in the row says which era it is
+          from. Trends that span 21 August are averaging two different games.
+        </p>
+        <div class="tblwrap"><table id="tblEras"></table></div>
+        <div class="tiles" id="tilesData" style="margin-top:12px"></div>
       </div>
       <div class="card">
         <h2>Top five today</h2>
@@ -283,6 +303,71 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
           A low completion rate means that theme is too hard, or its words are too obscure.
         </p>
         <div class="tblwrap"><table id="tblThemes"></table></div>
+      </div>
+
+      <!-- Build 21 gave players a choice of pack. The choice itself never
+           reaches the database - only the theme name does - so the split below
+           is INFERRED from the theme. dn_theme_unknown() is what tells you the
+           inference has gone stale, which is why the warning is right here
+           rather than buried in a log. -->
+      <div class="card">
+        <h2>Word packs</h2>
+        <p class="muted" style="margin-bottom:12px">
+          Which pack players are actually playing. Inferred from the theme &mdash;
+          the pack a player picks is stored in their browser, never sent to the server.
+        </p>
+        <div class="tblwrap"><table id="tblPacks"></table></div>
+        <p class="warn" id="packDrift" hidden></p>
+      </div>
+    </div>
+
+    <!-- ---- sprint ---- -->
+    <div id="paneSprint" role="tabpanel" tabindex="0" hidden>
+      <div class="card">
+        <h2>Sprint</h2>
+        <div class="tiles" id="tilesSprint"></div>
+      </div>
+      <div class="card">
+        <h2>Two clocks</h2>
+        <p class="muted" style="margin-bottom:12px">
+          Sprint ran for ten minutes until 8 September and five after it. A ten-minute
+          run clears roughly twice as much for the same skill, so the two are counted
+          separately rather than added together.
+        </p>
+        <div class="tblwrap"><table id="tblSprintEras"></table></div>
+      </div>
+      <div class="card">
+        <h2>Runs per day</h2>
+        <div class="chart" id="chartSprint"></div>
+        <div class="chartx" id="chartSprintX"></div>
+      </div>
+      <div class="card">
+        <h2>By player</h2>
+        <p class="muted" style="margin-bottom:12px">
+          <b>On 5-min</b> is what they have cleared on the current clock &mdash; the only
+          part that compares fairly between players today.
+        </p>
+        <div class="tblwrap"><table id="tblSprintPlayers"></table></div>
+      </div>
+    </div>
+
+    <!-- ---- streaks ---- -->
+    <div id="paneStreaks" role="tabpanel" tabindex="0" hidden>
+      <div class="card">
+        <h2>Streaks today</h2>
+        <div class="tiles" id="tilesStreaks"></div>
+      </div>
+      <div class="card">
+        <h2>About to break</h2>
+        <p class="muted" style="margin-bottom:12px">
+          These players have a run going and have <b>not played yet today</b>. A streak
+          counts consecutive calendar days &mdash; miss one, weekend included, and it is gone.
+        </p>
+        <div class="tblwrap"><table id="tblAtRisk"></table></div>
+      </div>
+      <div class="card">
+        <h2>Everyone</h2>
+        <div class="tblwrap"><table id="tblStreaks"></table></div>
       </div>
     </div>
 
@@ -614,9 +699,111 @@ async function loadAll(){
        to mark anyone below the minimum. Run in parallel and the build pills
        are wrong on the first load. */
     await loadOverview();
-    await Promise.all([loadDaily(),loadPlayers(),loadThemes()]);
+    await Promise.all([loadDaily(),loadPlayers(),loadThemes(),
+                       loadSprint(),loadStreaks(),loadSegments()]);
     stampNow();
   }catch(e){ if(String(e.message)!=="expired") console.error(e); }
+}
+
+/* ==========================================================
+   SPRINT, STREAKS, SEGMENTS   (added 10 September 2026)
+
+   The console was written on 7 September and had no idea sprint
+   existed - the word did not appear in this file once. These three
+   read the RPCs added in A02, which are new functions rather than
+   edits to the old ones, so nothing that already worked can break.
+
+   Every one of them fails soft: if the database has not had A01 and
+   A02 applied, the RPC 404s, guard() throws, and the panel simply
+   stays empty rather than taking the whole dashboard down with it.
+   ========================================================== */
+
+/* A whole game mode the dashboard could not see. */
+async function loadSprint(){
+  let d; try{ d=await guard(await rpc("admin_sprint",{p_token:TOKEN,p_days:30})); }
+  catch(e){ return; }
+  if(!d||!d.ok) return;
+  const t=d.totals||{};
+  tiles($("tilesSprint"),[
+    {l:"Runs, all time", v:t.runs_total||0},
+    {l:"Players who have sprinted", v:t.players_total||0},
+    {l:"Never tried it", v:d.never_sprinted||0, hi:(d.never_sprinted||0)>0},
+    {l:"Runs today", v:t.runs_today||0},
+    {l:"Puzzles cleared", v:t.cleared_total||0},
+    {l:"Best single run", v:t.best_run||0}
+  ]);
+  table($("tblSprintEras"),["Clock","Runs","Players","Cleared","Avg","Best","From","To"],
+    d.eras||[], r=>"<tr><td>"+esc(r.era)+"</td><td>"+r.runs+"</td><td>"+r.players+"</td>"+
+      "<td>"+r.cleared+"</td><td>"+esc(r.avg_cleared)+"</td><td>"+r.best_run+"</td>"+
+      "<td class='mono'>"+esc(r.first_seen)+"</td><td class='mono'>"+esc(r.last_seen)+"</td></tr>");
+  drawChart($("chartSprint"),$("chartSprintX"),d.by_day||[],"runs");
+  table($("tblSprintPlayers"),["Player","Runs","Cleared","On 5-min","10-min runs","Best run","Last"],
+    d.by_player||[], r=>"<tr><td>"+esc(r.username)+(r.flagged?' <span class="pill warn">flagged</span>':"")+
+      "</td><td>"+r.runs+"</td><td>"+r.cleared+"</td><td><b>"+r.cleared_5min+"</b></td>"+
+      "<td>"+r.runs_10min+"</td><td>"+r.best_run+"</td>"+
+      "<td class='mono'>"+esc(r.last_played)+"</td></tr>");
+}
+
+/* The streak is the retention number now. "About to break" is the only
+   panel here that is worth acting on the same day. */
+async function loadStreaks(){
+  let d; try{ d=await guard(await rpc("admin_streaks",{p_token:TOKEN})); }
+  catch(e){ return; }
+  if(!d||!d.ok) return;
+  const t=d.totals||{};
+  tiles($("tilesStreaks"),[
+    {l:"On a streak", v:t.on_a_streak||0},
+    {l:"About to break", v:t.at_risk||0, hi:(t.at_risk||0)>0},
+    {l:"Safe today", v:t.safe_today||0},
+    {l:"Longest running", v:t.longest||0}
+  ]);
+  const rows=d.rows||[];
+  const risk=rows.filter(r=>(+r.streak_days||0)>0 && !r.played_today);
+  table($("tblAtRisk"),["Player","Streak","Days played","Last played"],
+    risk, r=>"<tr><td>"+esc(r.username)+"</td><td><b>"+r.streak_days+"</b></td>"+
+      "<td>"+r.days_played+"</td><td class='mono'>"+esc(r.last_played)+"</td></tr>");
+  table($("tblStreaks"),["Player","Streak","Played today","Days played","Last played","Days since"],
+    rows, r=>"<tr><td>"+esc(r.username)+"</td><td>"+r.streak_days+"</td>"+
+      "<td>"+(r.played_today?"yes":"—")+"</td><td>"+r.days_played+"</td>"+
+      "<td class='mono'>"+esc(r.last_played)+"</td><td>"+r.days_since+"</td></tr>");
+}
+
+/* Packs, the two scoring eras, and how much of the table can be
+   tie-broken at all. */
+async function loadSegments(){
+  let d; try{ d=await guard(await rpc("admin_segments",{p_token:TOKEN})); }
+  catch(e){ return; }
+  if(!d||!d.ok) return;
+
+  table($("tblPacks"),["Pack","Plays","Players","Solved","Completion","Avg time","Avg score"],
+    d.packs||[], r=>"<tr><td>"+esc(r.pack)+"</td><td>"+r.plays+"</td><td>"+r.players+"</td>"+
+      "<td>"+r.solved+"</td><td>"+esc(r.pct)+"%</td><td class='mono'>"+fmtT(Math.round(r.avg_time))+
+      "</td><td>"+esc(r.avg_points)+"</td></tr>");
+
+  /* A theme the game plays that the lookup does not know about means the
+     pack split above is understating About ABG. Say so on the screen, not
+     in a console log nobody opens. */
+  const unk=d.unknown_themes||[];
+  const w=$("packDrift");
+  w.hidden=!unk.length;
+  if(unk.length) w.textContent =
+    "The pack list is out of date: "+unk.length+" theme"+(unk.length>1?"s are":" is")+
+    " being played that it does not recognise ("+unk.map(u=>u.theme).join(", ")+
+    "). Until sql/A01 is updated from the game, About ABG is undercounted.";
+
+  table($("tblEras"),["Scoring era","Games","Avg score","Avg time","From","To"],
+    d.daily_eras||[], r=>"<tr><td>"+esc(r.era)+
+      (r.era==="fits neither"?' <span class="pill warn">check</span>':"")+
+      "</td><td>"+r.games+"</td><td>"+esc(r.avg_points)+"</td>"+
+      "<td class='mono'>"+fmtT(Math.round(r.avg_time))+"</td>"+
+      "<td class='mono'>"+esc(r.first_seen)+"</td><td class='mono'>"+esc(r.last_seen)+"</td></tr>");
+
+  const m=d.ms_coverage||{};
+  tiles($("tilesData"),[
+    {l:"Scores with milliseconds", v:(m.pct==null?"—":m.pct+"%")},
+    {l:"Rows carrying ms", v:m.with_ms||0},
+    {l:"Rows from before ms", v:m.without_ms||0}
+  ]);
 }
 
 async function loadOverview(){
