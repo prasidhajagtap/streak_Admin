@@ -4,18 +4,34 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#5A0B14">
+<meta name="theme-color" content="#3F5238">
 <title>Word Search — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
-  --maroon:#8C1220; --maroon-dk:#5A0B14; --red:#C4161C;
-  --orange:#F26522; --gold:#FBB03B; --gold-lt:#FFD166;
-  --cream:#F7F2E6; --paper:#FDFAF2;
-  --grey:#9A9691; --grey-dk:#6E6A66; --ink:#3A1410; --line:#E6DDCC;
-  --ok:#2E7D4F; --warn:#B8860B;
+  /* ---------------------------------------------------------------
+     Palette, 21 September 2026 — the same one the game now wears, so
+     the two apps read as one product:
+       cream #F7F5F0 ground, sage #A3B19B, terracotta #E07A5F accent.
+
+     Token NAMES are left alone on purpose. --maroon is no longer
+     maroon and --orange is no longer orange, but every var() use in
+     this file keeps working untouched. Read --maroon as "the primary"
+     and --orange as "the warm accent".
+
+     Every value that carries text was measured on both grounds:
+       --grey was #646B5E, which is 2.4:1 on cream and failed at the
+       11px it is used at for table headers and counters. #646B5E is
+       5.06:1.
+     --------------------------------------------------------------- */
+  --maroon:#4A5C44; --maroon-dk:#3F5238; --red:#9C3D22;
+  --orange:#C05A3C; --gold:#E0A458; --gold-lt:#F3D6A8;
+  --sage:#A3B19B; --coral:#E07A5F;
+  --cream:#F7F5F0; --paper:#FFFDF9;
+  --grey:#646B5E; --grey-dk:#4A5247; --ink:#2B2A26; --line:#E3DDD0;
+  --ok:#3F6B47; --warn:#8A6A14;
   --display:'Anton','Arial Black',system-ui,sans-serif;
   --body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'Roboto Mono',ui-monospace,Menlo,monospace;
@@ -66,11 +82,15 @@ a{color:var(--maroon)}
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
   padding:12px 18px;border-radius:11px;font-family:var(--display);
   letter-spacing:.1em;text-transform:uppercase;font-size:13px;
-  background:linear-gradient(96deg,var(--red),var(--orange));color:#fff;
-  box-shadow:0 3px 0 #8E1010;transition:transform .1s,box-shadow .1s}
-.btn:active{transform:translateY(3px);box-shadow:0 0 0 #8E1010}
-.btn.gold{background:linear-gradient(96deg,var(--gold),#F0951C);color:#3D2200;box-shadow:0 3px 0 #C9821F}
-.btn.gold:active{box-shadow:0 0 0 #C9821F}
+  /* The light end is --coral-btn, not --orange. White on --orange is 4.40:1,
+     just under the bar, and on the colour this replaced (#F26522) it was
+     3.15:1 - a pre-existing failure. #B84E31 is 5.03:1 with white, and it is
+     the same terracotta the game uses for a found tile. */
+  background:linear-gradient(96deg,var(--red),#B84E31);color:#fff;
+  box-shadow:0 3px 0 #3F5238;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 #3F5238}
+.btn.gold{background:linear-gradient(96deg,var(--gold),#C96A4E);color:#33301F;box-shadow:0 3px 0 #B8892E}
+.btn.gold:active{box-shadow:0 0 0 #B8892E}
 .btn.ghost{background:var(--cream);color:var(--maroon);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
 .btn.ghost:active{box-shadow:0 0 0 var(--line)}
 .btn.sm{padding:8px 12px;font-size:11px}
@@ -117,16 +137,16 @@ tr:last-child td{border-bottom:0}
 td.num{font-family:var(--mono);font-weight:700}
 .pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
   text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--grey-dk)}
-.pill.good{background:#DCF0E4;color:var(--ok)}
-.pill.bad{background:#F7D9D9;color:var(--red)}
-.pill.warn{background:#FFF3D6;color:var(--warn)}
+.pill.good{background:#E0EDE2;color:var(--ok)}
+.pill.bad{background:#F6DDD4;color:var(--red)}
+.pill.warn{background:#F9EBD6;color:var(--warn)}
 /* Added 10 Sep with the Sprint and Streaks panels. .pill.warn already existed
    as a small inline chip; these two did not exist at all and the new tables
    referenced them, which would have rendered as unstyled default text. */
 td.mono,.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
 p.warn{margin:12px 0 0;padding:10px 12px;border-radius:10px;
-  background:#FFF3D6;border:1px solid var(--gold-lt);
-  color:#6B4E06;font-size:12.5px;line-height:1.55}
+  background:#F9EBD6;border:1px solid var(--gold-lt);
+  color:#5C4A17;font-size:12.5px;line-height:1.55}
 
 /* ---------- small bits ---------- */
 .counter{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--grey);
@@ -625,10 +645,10 @@ $("btnFindPlayer").addEventListener("click",async()=>{
   try{
     const r=await guard(await rpc("admin_find_player",{p_token:TOKEN,p_username:u}));
     if(!r||!r.ok){ out.textContent="Could not look that up."; return; }
-    if(!r.found){ out.innerHTML='<b style="color:#C4161C">No player with that username.</b>'; return; }
+    if(!r.found){ out.innerHTML='<b style="color:#9C3D22">No player with that username.</b>'; return; }
     out.innerHTML='<b>'+esc(r.username)+'</b><br>'+
       'Joined '+esc(r.joined)+' &middot; last seen '+esc(r.last_seen)+'<br>'+
-      'Recovery word set: '+(r.has_recovery?'<b style="color:#2E7D4F">yes</b>':'<b style="color:#B8860B">no</b>')+'<br>'+
+      'Recovery word set: '+(r.has_recovery?'<b style="color:#3F6B47">yes</b>':'<b style="color:#8A6A14">no</b>')+'<br>'+
       'Noted their secret number: '+(r.acknowledged?'yes':'not yet');
   }catch(e){ out.textContent=friendly(e); }
 });
