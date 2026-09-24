@@ -12,26 +12,31 @@
 <style>
 :root{
   /* ---------------------------------------------------------------
-     Palette, 21 September 2026 — the same one the game now wears, so
-     the two apps read as one product:
-       cream #F7F5F0 ground, sage #A3B19B, terracotta #E07A5F accent.
+     Palette, 24 September 2026 — the same vibrant retro arcade the
+     game now wears, so the two apps still read as one product:
+       #00DFD8 cyan, #FF007F magenta, #222831 navy, #EEEEEE white.
 
-     Token NAMES are left alone on purpose. --maroon is no longer
-     maroon and --orange is no longer orange, but every var() use in
-     this file keeps working untouched. Read --maroon as "the primary"
-     and --orange as "the warm accent".
+     Token NAMES are left alone on purpose, as in the game. --maroon
+     is the primary (cyan), --red and --orange are the pop (magenta),
+     and every var() use in this file keeps working untouched.
 
-     Every value that carries text was measured on both grounds:
-       --grey was #646B5E, which is 2.4:1 on cream and failed at the
-       11px it is used at for table headers and counters. #646B5E is
-       5.06:1.
+     THE SAME THREE MEASURED CORRECTIONS AS THE GAME. White on cyan is
+     1.44:1 and white on raw magenta is 3.26:1, so neither is ever a
+     background for white text: a cyan or magenta fill takes
+     --on-accent. --red is the darkened magenta #D40069, which does
+     carry white at 4.52:1, and --coral is the lightened #FF45A2 for
+     magenta TEXT on a dark card (4.62:1).
+
+     The ground is #1A1F26, a step below the brief's #222831, so that
+     cards and tiles have something to sit on.
      --------------------------------------------------------------- */
-  --maroon:#4A5C44; --maroon-dk:#3F5238; --red:#9C3D22;
-  --orange:#C05A3C; --gold:#E0A458; --gold-lt:#F3D6A8;
-  --sage:#A3B19B; --coral:#E07A5F;
-  --cream:#F7F5F0; --paper:#FFFDF9;
-  --grey:#646B5E; --grey-dk:#4A5247; --ink:#2B2A26; --line:#E3DDD0;
-  --ok:#3F6B47; --warn:#8A6A14;
+  --maroon:#00DFD8; --maroon-dk:#00B3AE; --red:#D40069;
+  --orange:#FF007F; --gold:#FFC93C; --gold-lt:#FFE59B;
+  --sage:#222831; --coral:#FF45A2;
+  --cream:#1A1F26; --paper:#232932;
+  --grey:#9AA6B2; --grey-dk:#B7C0CA; --ink:#EEEEEE; --line:#39434F;
+  --ok:#3BE8A0; --warn:#FFC93C;
+  --on-accent:#12181F;
   --display:'Anton','Arial Black',system-ui,sans-serif;
   --body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'Roboto Mono',ui-monospace,Menlo,monospace;
@@ -75,7 +80,7 @@ a{color:var(--maroon)}
   font-size:15px;margin:0 0 14px;color:var(--maroon)}
 .card.dark h2{color:var(--gold-lt)}
 .eyebrow{font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--orange);margin:0 0 8px}
+  color:var(--coral);margin:0 0 8px}
 .muted{color:var(--grey-dk);font-size:13px;line-height:1.6}
 
 /* ---------- buttons ---------- */
@@ -86,11 +91,11 @@ a{color:var(--maroon)}
      just under the bar, and on the colour this replaced (#F26522) it was
      3.15:1 - a pre-existing failure. #B84E31 is 5.03:1 with white, and it is
      the same terracotta the game uses for a found tile. */
-  background:linear-gradient(96deg,var(--red),#B84E31);color:#fff;
-  box-shadow:0 3px 0 #3F5238;transition:transform .1s,box-shadow .1s}
-.btn:active{transform:translateY(3px);box-shadow:0 0 0 #3F5238}
-.btn.gold{background:linear-gradient(96deg,var(--gold),#C96A4E);color:#33301F;box-shadow:0 3px 0 #B8892E}
-.btn.gold:active{box-shadow:0 0 0 #B8892E}
+  background:linear-gradient(96deg,var(--red),#A30050);color:#fff;
+  box-shadow:0 3px 0 #7A0039;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 #7A0039}
+.btn.gold{background:linear-gradient(96deg,var(--gold),#E0A800);color:#231C06;box-shadow:0 3px 0 #9A7300}
+.btn.gold:active{box-shadow:0 0 0 #9A7300}
 .btn.ghost{background:var(--cream);color:var(--maroon);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
 .btn.ghost:active{box-shadow:0 0 0 var(--line)}
 .btn.sm{padding:8px 12px;font-size:11px}
@@ -104,7 +109,7 @@ a{color:var(--maroon)}
 .field input,.field select,.field textarea{width:100%;padding:12px 13px;border-radius:11px;
   border:1.5px solid var(--line);background:var(--cream);font-weight:600}
 .field textarea{min-height:90px;resize:vertical;line-height:1.55}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange);background:#fff;outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange);background:var(--sage);outline:none}
 .msg{font-size:12px;font-weight:700;min-height:16px;margin:6px 0 0;color:var(--red)}
 .msg.ok{color:var(--ok)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -115,7 +120,7 @@ a{color:var(--maroon)}
 .tab{padding:10px 15px;border-radius:11px;border:1.5px solid var(--line);
   background:var(--paper);font-size:12px;font-weight:800;letter-spacing:.06em;
   text-transform:uppercase;color:var(--grey-dk)}
-.tab.on{background:var(--maroon);border-color:var(--maroon);color:#fff}
+.tab.on{background:var(--maroon);border-color:var(--maroon);color:var(--on-accent)}
 
 /* ---------- stat tiles ---------- */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px}
@@ -124,8 +129,8 @@ a{color:var(--maroon)}
 .tile span{display:block;font-size:9.5px;font-weight:800;letter-spacing:.14em;
   text-transform:uppercase;color:var(--grey);margin-top:5px}
 .tile.hi{background:var(--maroon);border-color:var(--maroon-dk)}
-.tile.hi b{color:var(--gold-lt)}
-.tile.hi span{color:rgba(255,255,255,.72)}
+.tile.hi b{color:var(--on-accent)}
+.tile.hi span{color:rgba(18,24,31,.78)}
 
 /* ---------- table ---------- */
 .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -137,16 +142,16 @@ tr:last-child td{border-bottom:0}
 td.num{font-family:var(--mono);font-weight:700}
 .pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
   text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--grey-dk)}
-.pill.good{background:#E0EDE2;color:var(--ok)}
-.pill.bad{background:#F6DDD4;color:var(--red)}
-.pill.warn{background:#F9EBD6;color:var(--warn)}
+.pill.good{background:rgba(59,232,160,.15);color:var(--ok)}
+.pill.bad{background:rgba(255,0,127,.18);color:var(--coral)}
+.pill.warn{background:rgba(255,201,60,.15);color:var(--warn)}
 /* Added 10 Sep with the Sprint and Streaks panels. .pill.warn already existed
    as a small inline chip; these two did not exist at all and the new tables
    referenced them, which would have rendered as unstyled default text. */
 td.mono,.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
 p.warn{margin:12px 0 0;padding:10px 12px;border-radius:10px;
-  background:#F9EBD6;border:1px solid var(--gold-lt);
-  color:#5C4A17;font-size:12.5px;line-height:1.55}
+  background:rgba(255,201,60,.13);border:1px solid var(--gold);
+  color:var(--gold-lt);font-size:12.5px;line-height:1.55}
 
 /* ---------- small bits ---------- */
 .counter{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--grey);
@@ -171,7 +176,7 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
 .chart .bar{flex:1;min-width:4px;background:linear-gradient(180deg,var(--orange),var(--maroon));
   border-radius:3px 3px 0 0;position:relative;min-height:2px}
 .chart .bar:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;
-  transform:translateX(-50%);background:var(--ink);color:#fff;font-size:10px;
+  transform:translateX(-50%);background:var(--sage);color:var(--ink);border:1px solid var(--maroon);font-size:10px;
   padding:4px 7px;border-radius:5px;white-space:nowrap;z-index:5;font-family:var(--mono)}
 .chartx{display:flex;justify-content:space-between;font-size:10px;color:var(--grey);
   font-family:var(--mono);padding-top:6px}
