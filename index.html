@@ -12,31 +12,34 @@
 <style>
 :root{
   /* ---------------------------------------------------------------
-     Palette, 24 September 2026 — the same vibrant retro arcade the
-     game now wears, so the two apps still read as one product:
-       #00DFD8 cyan, #FF007F magenta, #222831 navy, #EEEEEE white.
+     Palette, 25 September 2026 — the same one grey ramp and one red
+     the game now wears, so the two still read as one product.
 
-     Token NAMES are left alone on purpose, as in the game. --maroon
-     is the primary (cyan), --red and --orange are the pop (magenta),
-     and every var() use in this file keeps working untouched.
+       #FFFFFF  #DDDDDD  #BBBBBB  #999999  #767676  #545454  #323232
+       plus #CB2129 red and #FAE23B yellow, used only where they work
 
-     THE SAME THREE MEASURED CORRECTIONS AS THE GAME. White on cyan is
-     1.44:1 and white on raw magenta is 3.26:1, so neither is ever a
-     background for white text: a cyan or magenta fill takes
-     --on-accent. --red is the darkened magenta #D40069, which does
-     carry white at 4.52:1, and --coral is the lightened #FF45A2 for
-     magenta TEXT on a dark card (4.62:1).
+     Token names are left alone, as in the game: --maroon is the
+     primary (now a grey), --red and --orange are the red.
 
-     The ground is #1A1F26, a step below the brief's #222831, so that
-     cards and tiles have something to sit on.
+     THE SAME FOUR MEASURED FACTS as the game decided these values:
+       * #999999 is a dead zone — Jet on it is 4.50:1 with no margin
+         and white on it is 2.85:1, so no text rests there and it is
+         in no token below.
+       * the text flip is at Sonic Silver: Jet on White / Gainsboro /
+         Gray X11, white on Sonic / Davys / Jet.
+       * Sonic Silver #767676 is 4.13:1 as small text on the page, so
+         --grey is Davys #545454 instead.
+       * --on-accent is white now, for a dark grey or red fill. The
+         game has one gold-filled element that must override it; this
+         file has none, but anything gold added later must.
      --------------------------------------------------------------- */
-  --maroon:#00DFD8; --maroon-dk:#00B3AE; --red:#D40069;
-  --orange:#FF007F; --gold:#FFC93C; --gold-lt:#FFE59B;
-  --sage:#222831; --coral:#FF45A2;
-  --cream:#1A1F26; --paper:#232932;
-  --grey:#9AA6B2; --grey-dk:#B7C0CA; --ink:#EEEEEE; --line:#39434F;
-  --ok:#3BE8A0; --warn:#FFC93C;
-  --on-accent:#12181F;
+  --maroon:#545454; --maroon-dk:#323232; --red:#CB2129;
+  --orange:#B01C23; --gold:#FAE23B; --gold-lt:#FDF3AE;
+  --sage:#DDDDDD; --coral:#B01C23;
+  --cream:#F4F4F4; --paper:#FFFFFF;
+  --grey:#545454; --grey-dk:#3D3D3D; --ink:#323232; --line:#DDDDDD;
+  --ok:#4A6B1E; --warn:#5C4D00;
+  --on-accent:#FFFFFF;
   --display:'Anton','Arial Black',system-ui,sans-serif;
   --body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'Roboto Mono',ui-monospace,Menlo,monospace;
@@ -91,11 +94,11 @@ a{color:var(--maroon)}
      just under the bar, and on the colour this replaced (#F26522) it was
      3.15:1 - a pre-existing failure. #B84E31 is 5.03:1 with white, and it is
      the same terracotta the game uses for a found tile. */
-  background:linear-gradient(96deg,var(--red),#A30050);color:#fff;
-  box-shadow:0 3px 0 #7A0039;transition:transform .1s,box-shadow .1s}
-.btn:active{transform:translateY(3px);box-shadow:0 0 0 #7A0039}
-.btn.gold{background:linear-gradient(96deg,var(--gold),#E0A800);color:#231C06;box-shadow:0 3px 0 #9A7300}
-.btn.gold:active{box-shadow:0 0 0 #9A7300}
+  background:linear-gradient(96deg,#DD362D,var(--red));color:#fff;
+  box-shadow:0 3px 0 #8E1218;transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 #8E1218}
+.btn.gold{background:linear-gradient(96deg,var(--gold),#EFCF12);color:var(--ink);box-shadow:0 3px 0 #C9A800}
+.btn.gold:active{box-shadow:0 0 0 #C9A800}
 .btn.ghost{background:var(--cream);color:var(--maroon);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
 .btn.ghost:active{box-shadow:0 0 0 var(--line)}
 .btn.sm{padding:8px 12px;font-size:11px}
@@ -109,7 +112,7 @@ a{color:var(--maroon)}
 .field input,.field select,.field textarea{width:100%;padding:12px 13px;border-radius:11px;
   border:1.5px solid var(--line);background:var(--cream);font-weight:600}
 .field textarea{min-height:90px;resize:vertical;line-height:1.55}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange);background:var(--sage);outline:none}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange);background:#fff;outline:none}
 .msg{font-size:12px;font-weight:700;min-height:16px;margin:6px 0 0;color:var(--red)}
 .msg.ok{color:var(--ok)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
@@ -128,9 +131,9 @@ a{color:var(--maroon)}
 .tile b{display:block;font-family:var(--mono);font-size:26px;line-height:1.1;color:var(--maroon)}
 .tile span{display:block;font-size:9.5px;font-weight:800;letter-spacing:.14em;
   text-transform:uppercase;color:var(--grey);margin-top:5px}
-.tile.hi{background:var(--maroon);border-color:var(--maroon-dk)}
+.tile.hi{background:linear-gradient(150deg,var(--maroon),var(--maroon-dk));border-color:var(--maroon-dk)}
 .tile.hi b{color:var(--on-accent)}
-.tile.hi span{color:rgba(18,24,31,.78)}
+.tile.hi span{color:rgba(255,255,255,.82)}
 
 /* ---------- table ---------- */
 .tblwrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -142,16 +145,16 @@ tr:last-child td{border-bottom:0}
 td.num{font-family:var(--mono);font-weight:700}
 .pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
   text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--grey-dk)}
-.pill.good{background:rgba(59,232,160,.15);color:var(--ok)}
-.pill.bad{background:rgba(255,0,127,.18);color:var(--coral)}
-.pill.warn{background:rgba(255,201,60,.15);color:var(--warn)}
+.pill.good{background:#EDF3DF;color:var(--ok)}
+.pill.bad{background:#FBE7E8;color:var(--coral)}
+.pill.warn{background:#FDF7D2;color:var(--warn)}
 /* Added 10 Sep with the Sprint and Streaks panels. .pill.warn already existed
    as a small inline chip; these two did not exist at all and the new tables
    referenced them, which would have rendered as unstyled default text. */
 td.mono,.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
 p.warn{margin:12px 0 0;padding:10px 12px;border-radius:10px;
-  background:rgba(255,201,60,.13);border:1px solid var(--gold);
-  color:var(--gold-lt);font-size:12.5px;line-height:1.55}
+  background:#FDF7D2;border:1px solid var(--gold);
+  color:#5C4D00;font-size:12.5px;line-height:1.55}
 
 /* ---------- small bits ---------- */
 .counter{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--grey);
@@ -176,7 +179,7 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
 .chart .bar{flex:1;min-width:4px;background:linear-gradient(180deg,var(--orange),var(--maroon));
   border-radius:3px 3px 0 0;position:relative;min-height:2px}
 .chart .bar:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;
-  transform:translateX(-50%);background:var(--sage);color:var(--ink);border:1px solid var(--maroon);font-size:10px;
+  transform:translateX(-50%);background:var(--ink);color:#fff;border:1px solid var(--maroon-dk);font-size:10px;
   padding:4px 7px;border-radius:5px;white-space:nowrap;z-index:5;font-family:var(--mono)}
 .chartx{display:flex;justify-content:space-between;font-size:10px;color:var(--grey);
   font-family:var(--mono);padding-top:6px}
