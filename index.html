@@ -4,11 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#3F5238">
-<title>Word Search — Admin</title>
+<meta name="theme-color" content="#F5F4F1">
+<title>Word Vibe — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Archivo:wght@500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
 <style>
 :root{
   /* ---------------------------------------------------------------
@@ -33,14 +33,17 @@
          game has one gold-filled element that must override it; this
          file has none, but anything gold added later must.
      --------------------------------------------------------------- */
-  --maroon:#545454; --maroon-dk:#323232; --red:#CB2129;
-  --orange:#B01C23; --gold:#FAE23B; --gold-lt:#FDF3AE;
-  --sage:#DDDDDD; --coral:#B01C23;
-  --cream:#F4F4F4; --paper:#FFFFFF;
-  --grey:#545454; --grey-dk:#3D3D3D; --ink:#323232; --line:#DDDDDD;
-  --ok:#4A6B1E; --warn:#5C4D00;
+  /* Exactly the game's build-39 values, copied rather than approximated,
+     so the two never drift by a shade. --maroon is the dark chrome, --red
+     and --orange are the one colour, --sage is tone A of the board. */
+  --maroon:#2E2E2B; --maroon-dk:#1F1F1D; --red:#CB2129;
+  --orange:#B01C23; --gold:#F0D98A; --gold-lt:#FBF3DF;
+  --sage:#E9E7E2; --toneb:#DCD9D2; --coral:#B01C23;
+  --cream:#F5F4F1; --paper:#FFFFFF;
+  --grey:#5F5E58; --grey-dk:#46453F; --ink:#2E2E2B; --line:#E4E1DB;
+  --ok:#3F6B47; --warn:#926511;
   --on-accent:#FFFFFF;
-  --display:'Anton','Arial Black',system-ui,sans-serif;
+  --display:'Permanent Marker','Marker Felt','Arial Black',system-ui,sans-serif;
   --body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'Roboto Mono',ui-monospace,Menlo,monospace;
 }
@@ -94,11 +97,11 @@ a{color:var(--maroon)}
      just under the bar, and on the colour this replaced (#F26522) it was
      3.15:1 - a pre-existing failure. #B84E31 is 5.03:1 with white, and it is
      the same terracotta the game uses for a found tile. */
-  background:linear-gradient(96deg,#DD362D,var(--red));color:#fff;
+  background:linear-gradient(96deg,var(--red),#8E1218);color:#fff;
   box-shadow:0 3px 0 #8E1218;transition:transform .1s,box-shadow .1s}
 .btn:active{transform:translateY(3px);box-shadow:0 0 0 #8E1218}
-.btn.gold{background:linear-gradient(96deg,var(--gold),#EFCF12);color:var(--ink);box-shadow:0 3px 0 #C9A800}
-.btn.gold:active{box-shadow:0 0 0 #C9A800}
+.btn.gold{background:var(--gold);color:var(--ink);box-shadow:0 3px 0 #CFCCC4}
+.btn.gold:active{box-shadow:0 0 0 #CFCCC4}
 .btn.ghost{background:var(--cream);color:var(--maroon);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
 .btn.ghost:active{box-shadow:0 0 0 var(--line)}
 .btn.sm{padding:8px 12px;font-size:11px}
@@ -145,16 +148,16 @@ tr:last-child td{border-bottom:0}
 td.num{font-family:var(--mono);font-weight:700}
 .pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
   text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--grey-dk)}
-.pill.good{background:#EDF3DF;color:var(--ok)}
+.pill.good{background:#E6EFE8;color:var(--ok)}
 .pill.bad{background:#FBE7E8;color:var(--coral)}
-.pill.warn{background:#FDF7D2;color:var(--warn)}
+.pill.warn{background:var(--gold-lt);color:var(--warn)}
 /* Added 10 Sep with the Sprint and Streaks panels. .pill.warn already existed
    as a small inline chip; these two did not exist at all and the new tables
    referenced them, which would have rendered as unstyled default text. */
 td.mono,.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
 p.warn{margin:12px 0 0;padding:10px 12px;border-radius:10px;
-  background:#FDF7D2;border:1px solid var(--gold);
-  color:#5C4D00;font-size:12.5px;line-height:1.55}
+  background:var(--gold-lt);border:1px solid var(--gold);
+  color:var(--warn);font-size:12.5px;line-height:1.55}
 
 /* ---------- small bits ---------- */
 .counter{font-family:var(--mono);font-size:11px;font-weight:700;color:var(--grey);
@@ -190,7 +193,7 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
 <div class="wrap">
 
   <header class="top">
-    <h1>Word<em>Search</em> Admin</h1>
+    <h1>Word<em>Vibe</em> Admin</h1>
     <div class="sp"></div>
     <div class="whoami" id="whoami" hidden>Signed in as <b id="whoName">—</b></div>
     <div class="refbox" id="refBox" hidden>
@@ -653,10 +656,10 @@ $("btnFindPlayer").addEventListener("click",async()=>{
   try{
     const r=await guard(await rpc("admin_find_player",{p_token:TOKEN,p_username:u}));
     if(!r||!r.ok){ out.textContent="Could not look that up."; return; }
-    if(!r.found){ out.innerHTML='<b style="color:#9C3D22">No player with that username.</b>'; return; }
+    if(!r.found){ out.innerHTML='<b style="color:#B01C23">No player with that username.</b>'; return; }
     out.innerHTML='<b>'+esc(r.username)+'</b><br>'+
       'Joined '+esc(r.joined)+' &middot; last seen '+esc(r.last_seen)+'<br>'+
-      'Recovery word set: '+(r.has_recovery?'<b style="color:#3F6B47">yes</b>':'<b style="color:#8A6A14">no</b>')+'<br>'+
+      'Recovery word set: '+(r.has_recovery?'<b style="color:#3F6B47">yes</b>':'<b style="color:#926511">no</b>')+'<br>'+
       'Noted their secret number: '+(r.acknowledged?'yes':'not yet');
   }catch(e){ out.textContent=friendly(e); }
 });
