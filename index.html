@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="robots" content="noindex, nofollow">
-<meta name="theme-color" content="#F5F4F1">
+<meta name="theme-color" content="#0C0C14">
 <title>Word Vibe — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,41 +12,48 @@
 <style>
 :root{
   /* ---------------------------------------------------------------
-     Palette, 25 September 2026 — the same one grey ramp and one red
-     the game now wears, so the two still read as one product.
+     Palette, 27 September 2026 — the SAME values the game wears, and
+     for the same measured reasons, so the two read as one product.
+     Taken from the reference image, not guessed:
 
-       #FFFFFF  #DDDDDD  #BBBBBB  #999999  #767676  #545454  #323232
-       plus #CB2129 red and #FAE23B yellow, used only where they work
+       #0C0C14  near-black ground      #6018F0  the brand purple
+       #C0F000  lime, the call to action
+       #3CA8F0 blue   #FCC000 yellow   #F04830 red   #F03060 pink
 
-     Token names are left alone, as in the game: --maroon is the
-     primary (now a grey), --red and --orange are the red.
+     THE FOUR FACTS THAT DECIDED THESE VALUES, measured in a browser:
 
-     THE SAME FOUR MEASURED FACTS as the game decided these values:
-       * #999999 is a dead zone — Jet on it is 4.50:1 with no margin
-         and white on it is 2.85:1, so no text rests there and it is
-         in no token below.
-       * the text flip is at Sonic Silver: Jet on White / Gainsboro /
-         Gray X11, white on Sonic / Davys / Jet.
-       * Sonic Silver #767676 is 4.13:1 as small text on the page, so
-         --grey is Davys #545454 instead.
-       * --on-accent is white now, for a dark grey or red fill. The
-         game has one gold-filled element that must override it; this
-         file has none, but anything gold added later must.
+     1. PURPLE IS A FILL, NEVER TYPE. #6018F0 on the ground is 2.68:1.
+        White ON it is 7.28:1. So it fills; it never letters.
+     2. BORDERS GET THE LIFTED PURPLE. #9060FF is 4.92:1 on the ground
+        and 3.73:1 on the darker panel, both clear of the 3:1 a
+        non-text edge needs. #6018F0 is 2.68 and 2.03 - too weak.
+     3. EVERY BRIGHT FILL TAKES THE NEAR-BLACK LETTER. White on gold is
+        1.66:1, on lime 1.34:1, on blue 2.61:1. --on-bright is that
+        letter, and every gold, lime, blue, red or pink fill uses it.
+     4. HEADINGS ARE OFF-WHITE, NOT PURPLE. In the reference the ground
+        is near-black, the type off-white, and purple is the block
+        behind it. Lime stays the small accent above a heading.
+
+     Token names are left alone, as in the game: --maroon is the brand
+     (now the purple), --red is the error red, --sage the panel.
      --------------------------------------------------------------- */
-  /* Exactly the game's build-39 values, copied rather than approximated,
-     so the two never drift by a shade. --maroon is the dark chrome, --red
-     and --orange are the one colour, --sage is tone A of the board. */
-  --maroon:#2E2E2B; --maroon-dk:#1F1F1D; --red:#CB2129;
-  --orange:#B01C23; --gold:#F0D98A; --gold-lt:#FBF3DF;
-  --sage:#E9E7E2; --toneb:#DCD9D2; --coral:#B01C23;
-  --cream:#F5F4F1; --paper:#FFFFFF;
-  --grey:#5F5E58; --grey-dk:#46453F; --ink:#2E2E2B; --line:#E4E1DB;
-  --ok:#3F6B47; --warn:#926511;
-  --on-accent:#FFFFFF;
+  --maroon:#6018F0; --maroon-dk:#4A0FC4; --maroon-lt:#9060FF;
+  /* --red fills; --red-tx letters. #F04830 as 10px type on the dark panel
+     measures 3.99:1, four hundredths under the bar. #F4705C is 5.15:1. */
+  --red:#F04830; --red-tx:#F4705C; --orange:#C0F000; --coral:#F03060;
+  --gold:#FCC000; --gold-lt:#FFD95C;
+  --sage:#1E1E2B; --toneb:#26263A;
+  --cream:#0C0C14; --paper:#16161F;
+  --grey:#9A9AB0; --grey-dk:#B8B8CC; --ink:#F0F0F0; --head:#F0F0F0;
+  --line:#2E2E42;
+  --ok:#C0F000; --warn:#FCC000;
+  --on-accent:#FFFFFF;   /* the letter on a purple fill */
+  --on-bright:#0A0A10;   /* the letter on a gold, lime or blue fill */
   --display:'Permanent Marker','Marker Felt','Arial Black',system-ui,sans-serif;
   --body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'Roboto Mono',ui-monospace,Menlo,monospace;
 }
+
 *{box-sizing:border-box}
 [hidden]{display:none !important}
 body{margin:0;font-family:var(--body);background:var(--cream);color:var(--ink);
@@ -54,20 +61,20 @@ body{margin:0;font-family:var(--body);background:var(--cream);color:var(--ink);
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:3px solid var(--gold);outline-offset:2px;border-radius:6px}
-a{color:var(--maroon)}
+a{color:var(--gold)}
 
 .wrap{max-width:1140px;margin:0 auto;padding:16px 16px 60px}
 
 /* ---------- header ---------- */
 .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0 18px}
 .top h1{font-family:var(--display);text-transform:uppercase;letter-spacing:.03em;
-  font-size:clamp(24px,5vw,34px);margin:0;color:var(--maroon);line-height:1}
+  font-size:clamp(24px,5vw,34px);margin:0;color:var(--head);line-height:1}
 .top h1 em{font-style:normal;color:var(--orange)}
 .top .sp{margin-left:auto}
 .whoami{font-size:12px;font-weight:700;color:var(--grey-dk)}
-.whoami b{color:var(--maroon)}
+.whoami b{color:var(--head)}
 .refbox{display:flex;align-items:center;gap:9px;font-size:11.5px;font-weight:700;color:var(--grey)}
-.refbox button{display:flex;align-items:center;gap:6px;color:var(--maroon);
+.refbox button{display:flex;align-items:center;gap:6px;color:var(--head);
   border:1.5px solid var(--line);background:var(--paper);border-radius:9px;padding:7px 11px;
   font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase}
 .refbox button svg{width:14px;height:14px}
@@ -76,33 +83,32 @@ a{color:var(--maroon)}
 @keyframes spin360{to{transform:rotate(360deg)}}
 .autolbl{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:800;
   letter-spacing:.08em;text-transform:uppercase;color:var(--grey-dk);cursor:pointer}
-.autolbl input{accent-color:var(--maroon)}
+.autolbl input{accent-color:var(--maroon-lt)}
 
 /* ---------- cards ---------- */
 .card{background:var(--paper);border:1.5px solid var(--line);border-radius:16px;
   padding:18px;margin-bottom:14px}
-.card.dark{background:var(--maroon);border-color:var(--maroon-dk);color:#fff}
+.card.dark{background:var(--maroon);border-color:var(--maroon-lt);color:var(--on-accent)}
 .card h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.05em;
-  font-size:15px;margin:0 0 14px;color:var(--maroon)}
+  font-size:15px;margin:0 0 14px;color:var(--head)}
 .card.dark h2{color:var(--gold-lt)}
 .eyebrow{font-size:10px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;
-  color:var(--coral);margin:0 0 8px}
+  color:var(--orange);margin:0 0 8px}
 .muted{color:var(--grey-dk);font-size:13px;line-height:1.6}
 
 /* ---------- buttons ---------- */
 .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
   padding:12px 18px;border-radius:11px;font-family:var(--display);
   letter-spacing:.1em;text-transform:uppercase;font-size:13px;
-  /* The light end is --coral-btn, not --orange. White on --orange is 4.40:1,
-     just under the bar, and on the colour this replaced (#F26522) it was
-     3.15:1 - a pre-existing failure. #B84E31 is 5.03:1 with white, and it is
-     the same terracotta the game uses for a found tile. */
-  background:linear-gradient(96deg,var(--red),#8E1218);color:#fff;
-  box-shadow:0 3px 0 #8E1218;transition:transform .1s,box-shadow .1s}
-.btn:active{transform:translateY(3px);box-shadow:0 0 0 #8E1218}
-.btn.gold{background:var(--gold);color:var(--ink);box-shadow:0 3px 0 #CFCCC4}
-.btn.gold:active{box-shadow:0 0 0 #CFCCC4}
-.btn.ghost{background:var(--cream);color:var(--maroon);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
+  /* A purple fill with a white letter, 7.28:1 - the game's primary button,
+     to the pixel. The gradient runs to --maroon-dk so the shape still has
+     the depth the old two-tone red had. */
+  background:linear-gradient(96deg,var(--maroon),var(--maroon-dk));color:var(--on-accent);
+  box-shadow:0 3px 0 var(--maroon-dk);transition:transform .1s,box-shadow .1s}
+.btn:active{transform:translateY(3px);box-shadow:0 0 0 var(--maroon-dk)}
+.btn.gold{background:var(--gold);color:var(--on-bright);box-shadow:0 3px 0 #C99A00}
+.btn.gold:active{box-shadow:0 0 0 #C99A00}
+.btn.ghost{background:var(--cream);color:var(--head);border:1.5px solid var(--line);box-shadow:0 3px 0 var(--line)}
 .btn.ghost:active{box-shadow:0 0 0 var(--line)}
 .btn.sm{padding:8px 12px;font-size:11px}
 .btn[disabled]{opacity:.45;pointer-events:none}
@@ -115,8 +121,8 @@ a{color:var(--maroon)}
 .field input,.field select,.field textarea{width:100%;padding:12px 13px;border-radius:11px;
   border:1.5px solid var(--line);background:var(--cream);font-weight:600}
 .field textarea{min-height:90px;resize:vertical;line-height:1.55}
-.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--orange);background:#fff;outline:none}
-.msg{font-size:12px;font-weight:700;min-height:16px;margin:6px 0 0;color:var(--red)}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--maroon-lt);background:var(--toneb);outline:none}
+.msg{font-size:12px;font-weight:700;min-height:16px;margin:6px 0 7px;color:var(--red-tx)}
 .msg.ok{color:var(--ok)}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:640px){.row2{grid-template-columns:1fr}}
@@ -131,10 +137,10 @@ a{color:var(--maroon)}
 /* ---------- stat tiles ---------- */
 .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:11px}
 .tile{background:var(--paper);border:1.5px solid var(--line);border-radius:14px;padding:14px}
-.tile b{display:block;font-family:var(--mono);font-size:26px;line-height:1.1;color:var(--maroon)}
+.tile b{display:block;font-family:var(--display);font-size:28px;line-height:1.1;color:var(--head)}
 .tile span{display:block;font-size:9.5px;font-weight:800;letter-spacing:.14em;
   text-transform:uppercase;color:var(--grey);margin-top:5px}
-.tile.hi{background:linear-gradient(150deg,var(--maroon),var(--maroon-dk));border-color:var(--maroon-dk)}
+.tile.hi{background:linear-gradient(150deg,var(--maroon),var(--maroon-dk));border-color:var(--maroon-lt)}
 .tile.hi b{color:var(--on-accent)}
 .tile.hi span{color:rgba(255,255,255,.82)}
 
@@ -145,18 +151,20 @@ th{text-align:left;font-size:9.5px;font-weight:800;letter-spacing:.13em;
   text-transform:uppercase;color:var(--grey);padding:9px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
 td{padding:11px 10px;border-bottom:1px dashed var(--line);vertical-align:middle}
 tr:last-child td{border-bottom:0}
-td.num{font-family:var(--mono);font-weight:700}
+td.num{font-family:var(--display);font-weight:700;font-size:15px}
 .pill{display:inline-block;font-size:10px;font-weight:800;letter-spacing:.08em;
   text-transform:uppercase;padding:3px 9px;border-radius:99px;background:var(--line);color:var(--grey-dk)}
-.pill.good{background:#E6EFE8;color:var(--ok)}
-.pill.bad{background:#FBE7E8;color:var(--coral)}
-.pill.warn{background:var(--gold-lt);color:var(--warn)}
+.pill.good{background:var(--toneb);color:var(--ok)}
+.pill.bad{background:var(--toneb);color:var(--red-tx)}
+.pill.warn{background:var(--toneb);color:var(--warn)}
 /* Added 10 Sep with the Sprint and Streaks panels. .pill.warn already existed
    as a small inline chip; these two did not exist at all and the new tables
    referenced them, which would have rendered as unstyled default text. */
 td.mono,.mono{font-family:var(--mono);font-size:12px;white-space:nowrap}
+/* A warning on a dark page is a dark panel with an amber rule and amber
+   type. Amber on pale gold measures 1.21:1. */
 p.warn{margin:12px 0 0;padding:10px 12px;border-radius:10px;
-  background:var(--gold-lt);border:1px solid var(--gold);
+  background:var(--toneb);border:1px solid var(--gold);
   color:var(--warn);font-size:12.5px;line-height:1.55}
 
 /* ---------- small bits ---------- */
@@ -182,7 +190,7 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
 .chart .bar{flex:1;min-width:4px;background:linear-gradient(180deg,var(--orange),var(--maroon));
   border-radius:3px 3px 0 0;position:relative;min-height:2px}
 .chart .bar:hover::after{content:attr(data-t);position:absolute;bottom:100%;left:50%;
-  transform:translateX(-50%);background:var(--ink);color:#fff;border:1px solid var(--maroon-dk);font-size:10px;
+  transform:translateX(-50%);background:var(--paper);color:var(--ink);border:1px solid var(--maroon-lt);font-size:10px;
   padding:4px 7px;border-radius:5px;white-space:nowrap;z-index:5;font-family:var(--mono)}
 .chartx{display:flex;justify-content:space-between;font-size:10px;color:var(--grey);
   font-family:var(--mono);padding-top:6px}
@@ -656,10 +664,10 @@ $("btnFindPlayer").addEventListener("click",async()=>{
   try{
     const r=await guard(await rpc("admin_find_player",{p_token:TOKEN,p_username:u}));
     if(!r||!r.ok){ out.textContent="Could not look that up."; return; }
-    if(!r.found){ out.innerHTML='<b style="color:#B01C23">No player with that username.</b>'; return; }
+    if(!r.found){ out.innerHTML='<b style="color:var(--red-tx)">No player with that username.</b>'; return; }
     out.innerHTML='<b>'+esc(r.username)+'</b><br>'+
       'Joined '+esc(r.joined)+' &middot; last seen '+esc(r.last_seen)+'<br>'+
-      'Recovery word set: '+(r.has_recovery?'<b style="color:#3F6B47">yes</b>':'<b style="color:#926511">no</b>')+'<br>'+
+      'Recovery word set: '+(r.has_recovery?'<b style="color:var(--ok)">yes</b>':'<b style="color:var(--warn)">no</b>')+'<br>'+
       'Noted their secret number: '+(r.acknowledged?'yes':'not yet');
   }catch(e){ out.textContent=friendly(e); }
 });
@@ -811,16 +819,16 @@ async function loadSegments(){
       "<td>"+r.solved+"</td><td>"+esc(r.pct)+"%</td><td class='mono'>"+fmtT(Math.round(r.avg_time))+
       "</td><td>"+esc(r.avg_points)+"</td></tr>");
 
-  /* A theme the game plays that the lookup does not know about means the
-     pack split above is understating About ABG. Say so on the screen, not
-     in a console log nobody opens. */
+  /* A theme the game plays that the lookup does not know about means one
+     of the rows above is undercounted. Say so on the screen, not in a
+     console log nobody opens. */
   const unk=d.unknown_themes||[];
   const w=$("packDrift");
   w.hidden=!unk.length;
   if(unk.length) w.textContent =
     "The pack list is out of date: "+unk.length+" theme"+(unk.length>1?"s are":" is")+
     " being played that it does not recognise ("+unk.map(u=>u.theme).join(", ")+
-    "). Until sql/A01 is updated from the game, About ABG is undercounted.";
+    "). Add them in sql/A04_trending_packs.sql, or the split above is wrong.";
 
   table($("tblEras"),["Scoring era","Games","Avg score","Avg time","From","To"],
     d.daily_eras||[], r=>"<tr><td>"+esc(r.era)+
