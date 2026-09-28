@@ -8,8 +8,38 @@
 <title>Word Vibe — Admin</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Archivo:wght@500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Roboto+Mono:wght@500;700&display=swap" rel="stylesheet">
+<!-- Same brush face as the game, hosted here too: fonts/caveat-brush/, SIL OFL 1.1. -->
+<link rel="preload" href="fonts/caveat-brush/caveat-brush-latin.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+/* ---------------------------------------------------------------------
+   THE BRUSH FACE: Caveat Brush, by Impallari Type. SIL Open Font License
+   1.1 - free to use, embed and bundle; the licence ships beside the files
+   in fonts/caveat-brush/OFL.txt, as the OFL requires.
+
+   History: Permanent Marker, then Road Rage for one unmerged build, then
+   this, by choice. The face first asked for, Blaze Brush, is licensed for
+   personal use only and forbids uploading the file to the internet, which
+   serving it from a website does, so it is not used anywhere.
+
+   size-adjust 115.6% is measured, not chosen. Caveat Brush's capitals are
+   0.652em tall against Permanent Marker's 0.753em, so without it every
+   heading in the game shrank by an eighth. At 115.6% the capitals are the
+   same height as before, so nothing moves vertically.
+
+   The family is named 'WV Caveat Brush', not 'Caveat Brush', so a copy that
+   happens to be installed on a player's device can never be picked up
+   instead of this adjusted one.
+   --------------------------------------------------------------------- */
+@font-face{font-family:'WV Caveat Brush';font-style:normal;font-weight:400;font-display:swap;
+  size-adjust:115.6%;
+  src:url('fonts/caveat-brush/caveat-brush-latin.woff2') format('woff2');
+  unicode-range:U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD}
+@font-face{font-family:'WV Caveat Brush';font-style:normal;font-weight:400;font-display:swap;
+  size-adjust:115.6%;
+  src:url('fonts/caveat-brush/caveat-brush-latin-ext.woff2') format('woff2');
+  unicode-range:U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF}
+
 :root{
   /* ---------------------------------------------------------------
      Palette, 27 September 2026 — the SAME values the game wears, and
@@ -49,7 +79,7 @@
   --ok:#C0F000; --warn:#FCC000;
   --on-accent:#FFFFFF;   /* the letter on a purple fill */
   --on-bright:#0A0A10;   /* the letter on a gold, lime or blue fill */
-  --display:'Permanent Marker','Marker Felt','Arial Black',system-ui,sans-serif;
+  --display:'WV Caveat Brush','Marker Felt','Comic Sans MS',system-ui,sans-serif;
   --body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
   --mono:'Roboto Mono',ui-monospace,Menlo,monospace;
 }
