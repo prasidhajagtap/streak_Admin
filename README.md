@@ -22,7 +22,7 @@ Eight tabs, each answering one question:
 |---|---|
 | **Overview** | today at a glance: games, solves, new players, average score and time; all-time totals; the top five today; scores flagged as implausible |
 | **Trends** | games and sign-ups per day, and a day-by-day table |
-| **Players** | every player: when they joined, games, solves, points, best score, last played, which build they're on, and whether they've set a recovery word |
+| **Players** | every player: when they joined, games, solves, points, best score, last played, which build they're on, and whether they've set a recovery word. Below it, **Hide a player** takes someone off every leaderboard in one tap (they can still play, and Unhide puts them back), and lists older names the new sign-up check would stop |
 | **Themes** | how hard each theme is (completion rate, average time), and which word packs players are actually playing |
 | **Custom themes** | upload a spreadsheet, check it, save it, and switch it on for every player (below) |
 | **Sprint** | the 5-minute mode: runs, the best players, and the old 10-minute runs kept apart |
@@ -117,6 +117,7 @@ A05_verify_trending_packs.sql
 A06_custom_themes.sql          the custom themes table, its admin functions, and the game's read
 A07_verify_custom_themes.sql
 A08_retired_theme_names.sql    five early pack names A04 missed; ends in a checklist
+A09_hide_players.sql           hide or unhide a player on every board (needs the game's sql/35 first)
 A99_rollback_*.sql             one for each risky change
 ```
 

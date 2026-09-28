@@ -229,6 +229,11 @@ td.fact{color:var(--grey-dk);font-size:12.5px;line-height:1.5}
    here likely to be done from a phone, and Activate / Delete sit side by
    side in a table row - the place a mis-tap costs most. */
 #paneCustom .btn{min-height:44px}
+#panePlayers .btn{min-height:44px}
+.hprow{display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap}
+.hprow .field{flex:1 1 220px;margin:0}
+.hpsub{margin-top:4px;font-size:11px;color:var(--grey)}
+#tblHidden,#tblSuspect{min-width:0}
 /* the inline spinner inside a button label. Scoped to span so it does not
    collide with .refbox button.spin, which spins an svg instead. */
 span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
@@ -385,6 +390,31 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
           <input id="inSearch" type="text" placeholder="Search by username…" autocomplete="off">
         </div>
         <div class="tblwrap"><table id="tblPlayers"></table></div>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Keep the boards clean</p>
+        <h2>Hide a player <span class="counter" id="hpCount"></span></h2>
+        <p class="muted" style="margin-bottom:12px">
+          A hidden player drops off every leaderboard at once. They can still sign in and play,
+          and nothing is deleted &mdash; <b>Unhide</b> puts them straight back. Use it for a rude name,
+          a name pretending to be staff, or results nobody could really get.
+          Flagged results (a daily solve under 10 seconds, a sprint over 20 puzzles) are already
+          kept off the boards on their own.
+        </p>
+        <div class="hprow">
+          <div class="field">
+            <label for="inHpName">Username</label>
+            <input id="inHpName" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Night Owl">
+          </div>
+          <button class="btn" id="btnHpHide" type="button">Hide</button>
+        </div>
+        <p class="msg" id="mHp"></p>
+        <p class="eyebrow" style="margin-top:14px">Hidden now</p>
+        <div class="tblwrap"><table id="tblHidden"></table></div>
+        <p class="eyebrow" style="margin-top:14px">Names to look at</p>
+        <p class="muted" style="margin-bottom:8px">Players who joined before the sign-up name check, whose names it would stop today.</p>
+        <div class="tblwrap"><table id="tblSuspect"></table></div>
       </div>
     </div>
 
@@ -713,6 +743,7 @@ function openTab(t){
      part of loadAll, which stops at the first panel that fails. Opening the
      tab should always show the list as it is now. */
   if(t.dataset.pane==="paneCustom" && TOKEN && typeof loadCustomThemes==="function") loadCustomThemes();
+  if(t.dataset.pane==="panePlayers" && TOKEN && typeof loadHidden==="function") loadHidden();
 }
 TABS.forEach((t,i)=>{
   t.addEventListener("click",()=>openTab(t));
@@ -1576,6 +1607,69 @@ $("paneCustom").addEventListener("click",async e=>{
     }else{ m.textContent=ctServerErr(res); }
   }catch(err){ if(err.message!=="expired") m.textContent=friendlyCt(err); }
   loadCustomThemes();
+});
+
+/* ==========================================================
+   HIDE A PLAYER  (word_vibe sql/35 + streak_Admin sql/A09)
+   ========================================================== */
+const HP_ERR={
+  NOT_FOUND:"No player has that username. Copy it exactly from the board.",
+  AMBIGUOUS:"More than one player matches that name. Ask for help in the SQL editor.",
+  BAD_INPUT:"Type a username first."
+};
+const HP_WHY={NAME_NOT_ALLOWED:"Rude word",NAME_RESERVED:"Looks like staff"};
+function friendlyHp(e){
+  if(/Could not find the function|schema cache/i.test(String(e&&e.message||"")))
+    return "Not set up yet. Run word_vibe sql/35_fair_boards.sql, then sql/A09_hide_players.sql, in the SQL editor.";
+  return friendly(e);
+}
+async function loadHidden(){
+  const m=$("mHp");
+  let d;
+  try{ d=await guard(await rpc("admin_hidden_players",{p_token:TOKEN})); }
+  catch(e){ if(e.message!=="expired"){ m.className="msg"; m.textContent=friendlyHp(e); m.dataset.kind="load"; } return; }
+  if(!d||!d.ok) return;
+  if(m.dataset.kind==="load"){ m.textContent=""; m.dataset.kind=""; }
+  const hidden=d.hidden||[], suspect=d.suspect||[];
+  $("hpCount").textContent=hidden.length+" hidden";
+  /* Two columns only, the details under the name, so the button stays on
+     screen at phone width instead of past the table's right edge. */
+  table($("tblHidden"),["Player",""],hidden,r=>
+    "<tr data-name=\""+esc(r.username)+"\"><td><b>"+esc(r.username)+"</b>"+
+    "<div class='hpsub'>"+esc(String(r.hidden_at||"").slice(0,10))+(r.hidden_by?" &middot; by "+esc(r.hidden_by):"")+"</div></td>"+
+    "<td><div class='ctacts'><button class='btn ghost sm' data-hp='unhide' type='button'>Unhide</button></div></td></tr>");
+  table($("tblSuspect"),["Player",""],suspect,r=>
+    "<tr data-name=\""+esc(r.username)+"\"><td><b>"+esc(r.username)+"</b>"+
+    "<div class='hpsub'><span class='pill warn'>"+esc(HP_WHY[r.why]||r.why)+"</span></div></td>"+
+    "<td><div class='ctacts'><button class='btn sm' data-hp='hide' type='button'>Hide</button></div></td></tr>");
+}
+async function setHidden(name,hide){
+  const m=$("mHp"); m.className="msg"; m.textContent="Working…"; m.dataset.kind="act";
+  try{
+    const res=await guard(await rpc("admin_hide_player",{p_token:TOKEN,p_username:name,p_hide:hide}));
+    if(res&&res.ok){
+      m.className="msg ok";
+      m.textContent = hide ? "“"+res.username+"” is hidden from every board."
+                           : "“"+res.username+"” is back on the boards.";
+      if(hide) $("inHpName").value="";
+    }else if(res){ m.textContent=HP_ERR[res.error]||("Could not do that ("+res.error+")."); }
+  }catch(err){ if(err.message!=="expired") m.textContent=friendlyHp(err); }
+  loadHidden();
+}
+$("btnHpHide").addEventListener("click",()=>{
+  const name=$("inHpName").value.trim();
+  if(!name){ const m=$("mHp"); m.className="msg"; m.textContent=HP_ERR.BAD_INPUT; return; }
+  if(confirm("Hide “"+name+"” from every leaderboard?\n\nThey can still play. Unhide puts them back.")) setHidden(name,true);
+});
+$("inHpName").addEventListener("keydown",e=>{ if(e.key==="Enter") $("btnHpHide").click(); });
+/* On the pane, not the tables: table() swaps a table out when it is empty,
+   which would leave a listener on a detached node (see paneCustom). */
+$("panePlayers").addEventListener("click",e=>{
+  const b=e.target.closest("button[data-hp]"); if(!b||b.disabled) return;
+  const name=b.closest("tr")&&b.closest("tr").dataset.name; if(!name) return;
+  const hide=b.dataset.hp==="hide";
+  if(hide && !confirm("Hide “"+name+"” from every leaderboard?\n\nThey can still play. Unhide puts them back.")) return;
+  b.disabled=true; setHidden(name,hide);
 });
 
 </script>
