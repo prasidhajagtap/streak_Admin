@@ -51,6 +51,9 @@ create or replace function public.dn_retired_themes()
 returns text[] language sql immutable
 as $function$
   select array[
+    -- the first packs of all, from before the Birla names; found by A07's
+    -- drift alarm on the live data, 28 Sep 2026
+    'Our Group','Our Story','Our Companies','Our Brands','Life At ABG',
     'Birla Companies','Birla Brands','Metals & Cement','Money & Insurance',
     'Fibre & Fabric','The Birla Group','Inside Hindalco','Inside UltraTech',
     'Fashion Labels','New Ventures','Around The World','Green & Clean',
