@@ -206,6 +206,29 @@ p.warn{margin:12px 0 0;padding:10px 12px;border-radius:10px;
 .keyout{margin-top:12px;padding:13px 14px;border-radius:12px;background:var(--cream);
   border:1.5px solid var(--line);font-size:13px;line-height:1.7}
 td.empty{color:var(--grey);font-style:italic;text-align:center;padding:20px 10px}
+
+/* ---------- custom themes ---------- */
+.ctnotes{margin:12px 0;padding-left:18px;font-size:12.5px;line-height:1.6}
+.ctnotes li.err{color:var(--red-tx);font-weight:700}
+.ctnotes li.wrn{color:var(--warn)}
+.ctnotes li.ok{color:var(--ok);font-weight:700}
+.ctnotes:empty{display:none}
+#ctCheck .tiles{margin-top:6px}
+#ctCheck .tblwrap{max-height:340px;overflow:auto;margin-top:6px;border:1.5px solid var(--line);border-radius:12px}
+#ctCheck table{min-width:0}
+td.word{font-family:var(--mono);font-weight:700;color:var(--head);white-space:nowrap}
+td.fact{color:var(--grey-dk);font-size:12.5px;line-height:1.5}
+.ctskip{margin-top:10px}
+.ctskip summary,.ctwords summary{cursor:pointer;font-size:12px;font-weight:700;color:var(--grey-dk);margin-top:4px}
+.ctwords .list{display:grid;gap:4px;margin-top:8px;font-size:12px;color:var(--grey-dk);max-height:220px;overflow:auto}
+.ctwords .list b{color:var(--head);font-family:var(--mono);margin-right:6px}
+.ctacts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.pill.live{background:var(--orange);color:var(--on-bright)}
+#btnCtSave{margin-top:4px}
+/* 44px, not the console's compact 34px. Switching a theme on is the one job
+   here likely to be done from a phone, and Activate / Delete sit side by
+   side in a table row - the place a mis-tap costs most. */
+#paneCustom .btn{min-height:44px}
 /* the inline spinner inside a button label. Scoped to span so it does not
    collide with .refbox button.spin, which spins an svg instead. */
 span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
@@ -298,6 +321,7 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
       <button class="tab"    data-pane="paneTrends"   type="button" role="tab" aria-selected="false" aria-controls="paneTrends">Trends</button>
       <button class="tab"    data-pane="panePlayers"  type="button" role="tab" aria-selected="false" aria-controls="panePlayers">Players</button>
       <button class="tab"    data-pane="paneThemes"   type="button" role="tab" aria-selected="false" aria-controls="paneThemes">Themes</button>
+      <button class="tab"    data-pane="paneCustom"   type="button" role="tab" aria-selected="false" aria-controls="paneCustom">Custom themes</button>
       <button class="tab"    data-pane="paneSprint"   type="button" role="tab" aria-selected="false" aria-controls="paneSprint">Sprint</button>
       <button class="tab"    data-pane="paneStreaks"  type="button" role="tab" aria-selected="false" aria-controls="paneStreaks">Streaks</button>
       <button class="tab"    data-pane="paneSetup"    type="button" role="tab" aria-selected="false" aria-controls="paneSetup">Settings</button>
@@ -387,6 +411,57 @@ span.spin{display:inline-block;width:13px;height:13px;border-radius:50%;
         </p>
         <div class="tblwrap"><table id="tblPacks"></table></div>
         <p class="warn" id="packDrift" hidden></p>
+      </div>
+    </div>
+
+    <!-- ---- custom themes ----
+         Upload a spreadsheet of words and facts, check it against the limits
+         the puzzle builder actually needs, save it as a draft, then switch it
+         on. The first live theme unlocks the game's Themes tab for everyone
+         on a build that knows to ask (see CT_MIN_BUILD). -->
+    <div id="paneCustom" role="tabpanel" tabindex="0" hidden>
+      <div class="card">
+        <p class="eyebrow">Step 1 &middot; Upload</p>
+        <h2>Make a theme from a spreadsheet</h2>
+        <p class="muted" style="margin-bottom:12px">
+          Two columns: the <b>word</b>, then a one-line <b>fact</b> players see when they find it.
+          A header row is optional. Words are 3&ndash;9 letters, A&ndash;Z only.
+          A theme needs <b>5 to 50</b> usable words; <b>12 or more</b> gives players variety.
+        </p>
+        <p style="margin:0 0 14px"><button class="btn ghost sm" id="btnCtTemplate" type="button">Download a template</button></p>
+        <div class="row2">
+          <div class="field">
+            <label for="inCtName">Theme name</label>
+            <input id="inCtName" type="text" maxlength="40" autocomplete="off" placeholder="e.g. Office Life">
+          </div>
+          <div class="field">
+            <label for="inCtFile">Spreadsheet &middot; .xlsx, .csv or .tsv</label>
+            <input id="inCtFile" type="file" accept=".xlsx,.xlsm,.csv,.tsv,text/csv,text/tab-separated-values,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet">
+          </div>
+        </div>
+        <div id="ctCheck" hidden>
+          <div class="tiles" id="ctTiles"></div>
+          <ul class="ctnotes" id="ctNotes"></ul>
+          <div class="tblwrap"><table id="tblCtWords"></table></div>
+          <details class="ctskip" id="ctSkipBox" hidden>
+            <summary id="ctSkipSum">Skipped rows</summary>
+            <div class="tblwrap"><table id="tblCtSkip"></table></div>
+          </details>
+        </div>
+        <p class="msg" id="mCt"></p>
+        <button class="btn" id="btnCtSave" type="button" disabled>Save as draft</button>
+      </div>
+
+      <div class="card">
+        <p class="eyebrow">Step 2 &middot; Switch on</p>
+        <h2>Your themes <span class="counter" id="ctLiveCount"></span></h2>
+        <p class="muted" style="margin-bottom:12px" id="ctListLede">
+          <b>Activate</b> unlocks the Themes tab in the game for every player, straight away.
+          Up to 20 themes can be live. A theme that has been played cannot be deleted &mdash;
+          its scores still need it &mdash; so switch it off instead.
+        </p>
+        <div class="tblwrap"><table id="tblCustom"></table></div>
+        <p class="msg" id="mCtList"></p>
       </div>
     </div>
 
@@ -634,6 +709,10 @@ function openTab(t){
     x.setAttribute("aria-selected",on?"true":"false");
     $(x.dataset.pane).hidden = !on;
   });
+  /* Custom themes reloads whenever it is opened, on its own - not only as
+     part of loadAll, which stops at the first panel that fails. Opening the
+     tab should always show the list as it is now. */
+  if(t.dataset.pane==="paneCustom" && TOKEN && typeof loadCustomThemes==="function") loadCustomThemes();
 }
 TABS.forEach((t,i)=>{
   t.addEventListener("click",()=>openTab(t));
@@ -769,7 +848,7 @@ async function loadAll(){
        are wrong on the first load. */
     await loadOverview();
     await Promise.all([loadDaily(),loadPlayers(),loadThemes(),
-                       loadSprint(),loadStreaks(),loadSegments()]);
+                       loadSprint(),loadStreaks(),loadSegments(),loadCustomThemes()]);
     stampNow();
   }catch(e){ if(String(e.message)!=="expired") console.error(e); }
 }
@@ -1027,6 +1106,478 @@ if(TOKEN){
     else { drop(K_TOK); TOKEN=null; showScreen(); }
   }).catch(()=>{ drop(K_TOK); TOKEN=null; showScreen(); });
 }
+
+/* ==========================================================
+   CUSTOM THEMES
+
+   Read a spreadsheet in the browser (no library: see the reader
+   below), check it against the limits the game's puzzle builder
+   actually needs, show exactly what will be stored, then save it
+   as a draft. Activate makes it live for every player.
+
+   The server repeats every check in dn_clean_theme(), so nothing
+   here is trusted - this is only so the person uploading sees the
+   problem before they press anything.
+   ========================================================== */
+/* ===========================================================================
+   A spreadsheet reader with no dependencies.
+
+   WHY THIS EXISTS RATHER THAN SheetJS FROM A CDN. This runs inside the admin
+   console, which holds the Supabase project key. A third-party script there
+   can read that key, so the page loads nothing it did not ship with. An .xlsx
+   is a ZIP of XML, and the browser can already unzip (DecompressionStream)
+   and parse XML (DOMParser), so no library is needed.
+
+   Handles: .xlsx (ZIP + XML), .csv, .tsv
+   Refuses: .xls — the pre-2007 binary format, which is a different problem
+            entirely and is not worth carrying.
+   =========================================================================== */
+
+/* ---- ZIP ---------------------------------------------------------------
+   Only what an .xlsx needs: find an entry by name, inflate it. Entries are
+   located through the central directory rather than by scanning for local
+   headers, because a local header may declare sizes of 0 and defer them to a
+   data descriptor after the data, which cannot be read forwards. */
+async function unzip(buf){
+  const dv=new DataView(buf), u8=new Uint8Array(buf);
+  // End of central directory: scan back from the end for its signature. The
+  // comment field can be up to 64K, so that is how far back we look.
+  let eocd=-1;
+  for(let i=u8.length-22; i>=Math.max(0,u8.length-22-65535); i--){
+    if(dv.getUint32(i,true)===0x06054b50){ eocd=i; break; }
+  }
+  if(eocd<0) throw new Error("NOT_A_ZIP");
+  const count=dv.getUint16(eocd+10,true);
+  let p=dv.getUint32(eocd+16,true);          // start of the central directory
+  const files={};
+  for(let n=0;n<count;n++){
+    if(dv.getUint32(p,true)!==0x02014b50) break;
+    const method=dv.getUint16(p+10,true);
+    const csize =dv.getUint32(p+20,true);
+    const nameLen=dv.getUint16(p+28,true);
+    const extraLen=dv.getUint16(p+30,true);
+    const cmtLen =dv.getUint16(p+32,true);
+    const lho    =dv.getUint32(p+42,true);   // local header offset
+    const name=new TextDecoder().decode(u8.subarray(p+46,p+46+nameLen));
+    files[name]={method,csize,lho};
+    p+=46+nameLen+extraLen+cmtLen;
+  }
+  return {
+    has:n=>!!files[n],
+    names:()=>Object.keys(files),
+    async text(name){
+      const f=files[name]; if(!f) return null;
+      // The LOCAL header's name/extra lengths can differ from the central
+      // directory's, so the data offset must be read from the local header.
+      const nLen=dv.getUint16(f.lho+26,true), xLen=dv.getUint16(f.lho+28,true);
+      const start=f.lho+30+nLen+xLen;
+      const raw=u8.subarray(start,start+f.csize);
+      if(f.method===0) return new TextDecoder().decode(raw);        // stored
+      if(f.method!==8) throw new Error("ZIP_METHOD_"+f.method);     // not deflate
+      if(typeof DecompressionStream!=="function") throw new Error("NO_DECOMPRESSION_STREAM");
+      const ds=new DecompressionStream("deflate-raw");
+      const reader=new Blob([raw]).stream().pipeThrough(ds).getReader();
+      /* Read in chunks and stop at a ceiling. A few hundred compressed bytes
+         can inflate to gigabytes (a "zip bomb"), and reading that whole would
+         freeze the tab. A real theme sheet's XML is a few kilobytes; 16 MB is
+         thousands of times more than any honest one needs. */
+      const parts=[]; let total=0;
+      for(;;){
+        const {done,value}=await reader.read();
+        if(done) break;
+        total+=value.length;
+        if(total>16*1024*1024){ try{ reader.cancel(); }catch(e){} throw new Error("TOO_BIG_INSIDE"); }
+        parts.push(value);
+      }
+      return new TextDecoder().decode(await new Blob(parts).arrayBuffer());
+    }
+  };
+}
+
+/* ---- XLSX -------------------------------------------------------------- */
+function colOf(ref){                 // "BC12" -> 0-based column index
+  let n=0;
+  for(let i=0;i<ref.length;i++){
+    const c=ref.charCodeAt(i);
+    if(c<65||c>90) break;
+    n=n*26+(c-64);
+  }
+  return n-1;
+}
+async function readXlsx(buf){
+  const zip=await unzip(buf);
+  const parse=t=>new DOMParser().parseFromString(t,"application/xml");
+
+  // shared strings: most cell text lives here, referenced by index
+  let shared=[];
+  if(zip.has("xl/sharedStrings.xml")){
+    const doc=parse(await zip.text("xl/sharedStrings.xml"));
+    shared=[...doc.getElementsByTagName("si")].map(si=>
+      [...si.getElementsByTagName("t")].map(t=>t.textContent).join(""));
+  }
+  // which file is the FIRST sheet? workbook.xml names it, rels maps the name
+  // to a path. Falling back to sheet1.xml is wrong often enough to matter.
+  let sheetPath="xl/worksheets/sheet1.xml";
+  try{
+    const wb=parse(await zip.text("xl/workbook.xml"));
+    const first=wb.getElementsByTagName("sheet")[0];
+    const rid=first && (first.getAttribute("r:id")||first.getAttribute("id"));
+    if(rid && zip.has("xl/_rels/workbook.xml.rels")){
+      const rels=parse(await zip.text("xl/_rels/workbook.xml.rels"));
+      for(const rel of rels.getElementsByTagName("Relationship")){
+        if(rel.getAttribute("Id")===rid){
+          let t=rel.getAttribute("Target").replace(/^\/?xl\//,"").replace(/^\//,"");
+          sheetPath="xl/"+t; break;
+        }
+      }
+    }
+  }catch(e){/* fall through to sheet1 */}
+  if(!zip.has(sheetPath)){
+    const any=zip.names().find(n=>/^xl\/worksheets\/.*\.xml$/.test(n));
+    if(!any) throw new Error("NO_SHEET");
+    sheetPath=any;
+  }
+  const doc=parse(await zip.text(sheetPath));
+  const rows=[];
+  for(const row of doc.getElementsByTagName("row")){
+    const cells=[];
+    for(const c of row.getElementsByTagName("c")){
+      const i=colOf(c.getAttribute("r")||"A1");
+      const t=c.getAttribute("t");
+      let v="";
+      if(t==="inlineStr"){
+        v=[...c.getElementsByTagName("t")].map(x=>x.textContent).join("");
+      }else{
+        const ve=c.getElementsByTagName("v")[0];
+        const raw=ve?ve.textContent:"";
+        v = (t==="s") ? (shared[+raw]??"") : raw;   // s = shared-string index
+      }
+      cells[i]=v;
+    }
+    rows.push(Array.from(cells,x=>x==null?"":x));
+  }
+  return rows;
+}
+
+/* ---- delimited text ---------------------------------------------------- */
+function readDelimited(text, sep){
+  // A real CSV parser: quoted fields may hold the separator, newlines and
+  // doubled quotes. A split(",") would mangle every fact with a comma in it.
+  const rows=[]; let row=[], field="", q=false;
+  text=text.replace(/^﻿/,"");                 // Excel writes a BOM
+  for(let i=0;i<text.length;i++){
+    const ch=text[i];
+    if(q){
+      if(ch==='"'){ if(text[i+1]==='"'){field+='"';i++;} else q=false; }
+      else field+=ch;
+    }else if(ch==='"'){ q=true; }
+    else if(ch===sep){ row.push(field); field=""; }
+    else if(ch==="\n"){ row.push(field); field=""; rows.push(row); row=[]; }
+    else if(ch==="\r"){ /* CRLF */ }
+    else field+=ch;
+  }
+  if(field.length||row.length){ row.push(field); rows.push(row); }
+  return rows;
+}
+
+/* ---- the one entry point ----------------------------------------------- */
+async function readSheet(file){
+  const name=(file.name||"").toLowerCase();
+  if(file.size>2*1024*1024) throw new Error("TOO_BIG");   // a theme sheet is a few KB
+  if(name.endsWith(".xls")) throw new Error("OLD_XLS");
+  if(name.endsWith(".csv")) return readDelimited(await file.text(), ",");
+  if(name.endsWith(".tsv")||name.endsWith(".tab")) return readDelimited(await file.text(), "\t");
+  if(name.endsWith(".xlsx")||name.endsWith(".xlsm")) return await readXlsx(await file.arrayBuffer());
+  // no usable extension: sniff. A ZIP starts "PK".
+  const buf=await file.arrayBuffer(); const u=new Uint8Array(buf);
+  if(u[0]===0x50&&u[1]===0x4B) return await readXlsx(buf);
+  return readDelimited(new TextDecoder().decode(buf), ",");
+}
+
+/* ===========================================================================
+   Turning a spreadsheet into a theme the puzzle builder can actually use.
+
+   Every limit here was measured against the game's own buildOnce(), not
+   guessed. See THEME_LIMITS for the numbers and why each one exists.
+   =========================================================================== */
+const THEME_LIMITS={
+  minWords: 5,     // HARD. At 4 the builder returns null on every attempt and
+                   // buildPuzzle() throws. It is a wall, not a slope.
+  goodWords: 12,   // RECOMMENDED. C(12,5) = 792 different puzzles, so a player
+                   // will not meet a repeat. At exactly 5 there is ONE possible
+                   // puzzle - the same five words for ever.
+  maxWords: 50,    // Measured clean: 98% first-attempt placement, 0 failures.
+  minLen: 3,       // The shortest word shipping today is PPE.
+  maxLen: 9,       // The grid is 9x9. ANYTHING LONGER IS SILENTLY DROPPED by
+                   // the builder's own length filter, which is why this file
+                   // counts usable words AFTER filtering, never before.
+  maxFact: 160,    // The fact card wraps; beyond this it overflows the card.
+  maxName: 40
+};
+const choose=(n,k)=>{ if(k>n) return 0; let r=1; for(let i=0;i<k;i++) r=r*(n-i)/(i+1); return Math.round(r); };
+
+function validateTheme(rows, name){
+  /* Whitespace collapses exactly as dn_clean_theme() does on the server, so
+     the name shown here is the name that will be stored. */
+  const out={ok:false, name:String(name||"").replace(/\s+/g," ").trim(), words:[], skipped:[], warnings:[], errors:[], stats:{}};
+  if(!out.name) out.errors.push("Give the theme a name.");
+  else if(out.name.length>THEME_LIMITS.maxName)
+    out.errors.push("The name is longer than "+THEME_LIMITS.maxName+" characters.");
+  else if(!/^[A-Za-z0-9 &'.,!?()-]*$/.test(out.name))
+    out.errors.push("The name can use letters, numbers, spaces and & ' . , ! ? ( ) - only.");
+
+  if(!rows || !rows.length){ out.errors.push("That file has no rows in it."); return out; }
+
+  // A header row is optional. Detect it rather than demand it.
+  let start=0;
+  const first=(rows[0]||[]).map(c=>String(c||"").trim().toLowerCase());
+  if(first[0]==="word"||first[0]==="words"||first[1]==="fact"||first[1]==="facts") start=1;
+  out.stats.headerSkipped = start===1;
+
+  const seen=new Map();
+  for(let i=start;i<rows.length;i++){
+    const r=rows[i]||[];
+    const rawW=String(r[0]==null?"":r[0]).trim();
+    /* Control characters become spaces and runs of space collapse - the
+       server does the same, so the preview matches what is stored. */
+    const rawF=String(r[1]==null?"":r[1]).replace(/[\u0000-\u001F\u007F]/g," ").replace(/\s+/g," ").trim();
+    const line=i+1;
+    if(!rawW && !rawF) continue;                       // a blank row is not an error
+    const w=rawW.toUpperCase();
+    if(!rawW){ out.skipped.push({line, word:"(blank)", why:"no word in the first column"}); continue; }
+    if(!/^[A-Z]+$/.test(w)){
+      out.skipped.push({line, word:rawW,
+        why:"only the letters A-Z can be hidden in the grid — no spaces, digits, hyphens or accents"});
+      continue;
+    }
+    if(w.length<THEME_LIMITS.minLen){
+      out.skipped.push({line, word:w, why:"shorter than "+THEME_LIMITS.minLen+" letters"}); continue; }
+    if(w.length>THEME_LIMITS.maxLen){
+      out.skipped.push({line, word:w,
+        why:"longer than "+THEME_LIMITS.maxLen+" letters, so it cannot fit the 9x9 grid"}); continue; }
+    if(seen.has(w)){
+      out.skipped.push({line, word:w, why:"already used on line "+seen.get(w)}); continue; }
+    seen.set(w,line);
+    let fact=rawF;
+    if(!fact){ out.warnings.push('"'+w+'" has no fact, so its card will be blank.'); }
+    else if(fact.length>THEME_LIMITS.maxFact){
+      fact=fact.slice(0,THEME_LIMITS.maxFact-1)+"…";
+      out.warnings.push('The fact for "'+w+'" was long and has been trimmed.');
+    }
+    out.words.push({w, f:fact});
+  }
+
+  const n=out.words.length;
+  out.stats.usable=n;
+  out.stats.read=rows.length-start;
+  out.stats.dropped=out.skipped.length;
+  out.stats.puzzles=choose(n,5);
+  out.stats.lengths=out.words.reduce((a,x)=>{a[x.w.length]=(a[x.w.length]||0)+1;return a;},{});
+  out.stats.allNine = n>0 && out.words.every(x=>x.w.length===9);
+
+  if(n<THEME_LIMITS.minWords){
+    out.errors.push("Only "+n+" usable word"+(n===1?"":"s")+". The puzzle needs "+
+      THEME_LIMITS.minWords+" and cannot be built with fewer.");
+  }else if(n>THEME_LIMITS.maxWords){
+    out.errors.push(n+" usable words. The most a theme may hold is "+THEME_LIMITS.maxWords+".");
+  }else if(n<THEME_LIMITS.goodWords){
+    out.warnings.push("Only "+n+" words, so there are just "+out.stats.puzzles+
+      " different puzzle"+(out.stats.puzzles===1?"":"s")+" possible"+
+      (out.stats.puzzles===1?" — every game will be identical.":". Add words up to "+
+       THEME_LIMITS.goodWords+" and that rises to "+choose(THEME_LIMITS.goodWords,5)+"."));
+  }
+  if(out.stats.allNine)
+    out.warnings.push("Every word is nine letters. That is the hardest case to lay out — "+
+      "the grid still builds, but adding a few shorter words makes it look less crowded.");
+
+  out.ok = out.errors.length===0;
+  return out;
+}
+
+
+/* The first game build that asks the server for live themes. Older copies
+   never ask, so for them the Themes tab simply stays locked. */
+const CT_MIN_BUILD=46;
+
+const CT_ERR={
+  NAME_EMPTY:"Give the theme a name.",
+  NAME_TOO_LONG:"The name is longer than 40 characters.",
+  NAME_CHARS:"The name can use letters, numbers, spaces and & ' . , ! ? ( ) - only.",
+  NAME_RESERVED:"That name belongs to one of the game's built-in word packs. Pick another.",
+  NAME_TAKEN:"A theme with that name already exists. Pick another name.",
+  TOO_FEW_WORDS:"Fewer than 5 usable words. A puzzle needs 5.",
+  TOO_MANY_WORDS:"More than 50 usable words. The most a theme may hold is 50.",
+  TOO_MANY_ROWS:"The sheet has more than 500 rows. Trim it to the words you want.",
+  WORDS_NOT_A_LIST:"The words could not be read.",
+  STORE_FULL:"100 themes are already saved. Delete some drafts first.",
+  LIVE_LIMIT:"20 themes are already live. Switch one off first.",
+  IS_LIVE:"Switch it off before deleting it.",
+  HAS_PLAYS:"Players have played this theme, so it is kept for their scores. Switch it off instead.",
+  NOT_FOUND:"That theme no longer exists. The list has been refreshed.",
+  BAD_STATUS:"That change is not allowed."
+};
+const CT_READ_ERR={
+  OLD_XLS:"That is an old .xls file. In Excel use File → Save As, choose .xlsx or CSV, and upload that.",
+  NOT_A_ZIP:"That file could not be opened as a spreadsheet.",
+  NO_SHEET:"That workbook has no sheet with data in it.",
+  NO_DECOMPRESSION_STREAM:"This browser cannot open .xlsx files. Save the sheet as CSV, or use a current Chrome, Edge, Safari or Firefox.",
+  TOO_BIG:"That file is over 2 MB. A theme sheet is only a few kilobytes — check it is the right file.",
+  TOO_BIG_INSIDE:"That workbook holds far more data than a theme needs. Copy just the two columns into a new file."
+};
+function ctServerErr(res){
+  if(!res) return "No answer from the server.";
+  const codes=(res.errors&&res.errors.length)?res.errors:[res.error];
+  return codes.map(c=>CT_ERR[c]||("The server said: "+c)).join(" ");
+}
+
+let ctRows=null, ctCheckRes=null, ctBusy=false;
+
+/* One example sheet that is valid as it stands, so the template doubles as
+   a working test upload. */
+$("btnCtTemplate").addEventListener("click",()=>{
+  const rows=[["word","fact"],
+    ["DESK","Where the work gets done."],["COFFEE","The first thing most offices run on."],
+    ["MEETING","An hour that could have been an email."],["LAPTOP","A desk you can carry."],
+    ["STAPLER","Two pieces of paper, one satisfying click."],["PRINTER","Always out of toner when you need it."],
+    ["DEADLINE","The best motivator ever invented."],["LUNCH","The meeting everyone attends."],
+    ["BADGE","Your key to the building."],["TEAMWORK","Together everyone achieves more."],
+    ["INBOX","The to-do list other people write for you."],["MONDAY","The start of something."]];
+  const csv=rows.map(r=>r.map(c=>/[",\n]/.test(c)?'"'+c.replace(/"/g,'""')+'"':c).join(",")).join("\r\n");
+  const url=URL.createObjectURL(new Blob(["﻿"+csv],{type:"text/csv;charset=utf-8"}));
+  const a=document.createElement("a"); a.href=url; a.download="word-vibe-theme-template.csv";
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),2000);
+});
+
+/* A browser fires no change event when the same file is picked again - and
+   "fix the sheet, upload it again" is the usual way to use this. Clearing the
+   input as the picker opens makes every pick count. */
+$("inCtFile").addEventListener("click",()=>{ $("inCtFile").value=""; });
+$("inCtFile").addEventListener("change",async()=>{
+  const f=$("inCtFile").files[0]; const m=$("mCt");
+  ctRows=null; m.className="msg"; m.textContent="";
+  if(!f){ ctPaint(); return; }
+  /* An empty name box takes the file name, minus its extension, as a start. */
+  if(!$("inCtName").value.trim())
+    $("inCtName").value=f.name.replace(/\.[^.]+$/,"").replace(/[_-]+/g," ").replace(/[^A-Za-z0-9 &'.,!?()-]/g,"").slice(0,40).trim();
+  try{ ctRows=await readSheet(f); }
+  catch(e){ m.textContent=CT_READ_ERR[e.message]||("That file could not be read ("+e.message+")."); }
+  ctPaint();
+});
+$("inCtName").addEventListener("input",()=>{ if(ctRows) ctPaint(); else ctSaveState(); });
+
+function ctPaint(){
+  const box=$("ctCheck");
+  if(!ctRows){ box.hidden=true; ctCheckRes=null; ctSaveState(); return; }
+  const v=ctCheckRes=validateTheme(ctRows,$("inCtName").value);
+  box.hidden=false;
+  const n=v.stats.usable||0, need=Math.max(0,THEME_LIMITS.minWords-n), over=Math.max(0,n-THEME_LIMITS.maxWords);
+  tiles($("ctTiles"),[
+    {l:"Usable words", v:n+" / "+THEME_LIMITS.maxWords, hi:v.ok},
+    {l:"Skipped rows", v:v.skipped.length},
+    {l:"Different puzzles", v:(v.stats.puzzles||0).toLocaleString()},
+    {l:"Status", v: v.ok ? "Ready" : need ? "Needs "+need+" more" : over ? over+" too many" : "Fix below"}
+  ]);
+  const notes=[];
+  v.errors.forEach(e=>notes.push('<li class="err">'+esc(e)+'</li>'));
+  v.warnings.forEach(w=>notes.push('<li class="wrn">'+esc(w)+'</li>'));
+  if(v.ok && !v.warnings.length) notes.push('<li class="ok">Looks good. Save it as a draft, then switch it on below.</li>');
+  $("ctNotes").innerHTML=notes.join("");
+  table($("tblCtWords"),["#","Word","Fact"],v.words,(w,i)=>
+    "<tr><td class='mono'>"+(i+1)+"</td><td class='word'>"+esc(w.w)+"</td><td class='fact'>"+
+    (w.f?esc(w.f):"<span class='muted'>no fact</span>")+"</td></tr>");
+  const sk=$("ctSkipBox"); sk.hidden=!v.skipped.length;
+  if(v.skipped.length){
+    $("ctSkipSum").textContent=v.skipped.length+" row"+(v.skipped.length===1?"":"s")+" skipped — see why";
+    table($("tblCtSkip"),["Line","In the sheet","Why"],v.skipped,r=>
+      "<tr><td class='mono'>"+r.line+"</td><td class='word'>"+esc(r.word)+"</td><td class='fact'>"+esc(r.why)+"</td></tr>");
+  }
+  ctSaveState();
+}
+function ctSaveState(){ $("btnCtSave").disabled = ctBusy || !(ctCheckRes && ctCheckRes.ok); }
+
+$("btnCtSave").addEventListener("click",async()=>{
+  if(!ctCheckRes||!ctCheckRes.ok||ctBusy) return;
+  const m=$("mCt"); m.className="msg"; m.textContent="Saving…";
+  ctBusy=true; ctSaveState();
+  try{
+    const res=await guard(await rpc("admin_custom_theme_save",
+      {p_token:TOKEN, p_name:ctCheckRes.name, p_words:ctCheckRes.words}));
+    if(res&&res.ok){
+      m.className="msg ok";
+      m.textContent="“"+res.name+"” saved as a draft with "+res.count+" words. Switch it on below when you are ready.";
+      $("inCtFile").value=""; $("inCtName").value=""; ctRows=null; ctPaint();
+      loadCustomThemes();
+    }else m.textContent=ctServerErr(res);
+  }catch(e){ if(e.message!=="expired") m.textContent=friendlyCt(e); }
+  ctBusy=false; ctSaveState();
+});
+
+function friendlyCt(e){
+  if(/Could not find the function|schema cache/i.test(String(e&&e.message)))
+    return "The database is not ready for custom themes yet. Run sql/A06_custom_themes.sql in the Supabase SQL editor.";
+  return friendly(e);
+}
+
+async function loadCustomThemes(){
+  const m=$("mCtList");
+  let d;
+  try{ d=await guard(await rpc("admin_custom_theme_list",{p_token:TOKEN})); }
+  catch(e){ if(e.message!=="expired"){ m.className="msg"; m.textContent=friendlyCt(e); m.dataset.kind="load"; } return; }
+  if(!d||!d.ok){ m.className="msg"; m.textContent=ctServerErr(d); m.dataset.kind="load"; return; }
+  /* Clear only a message this loader put there. An action's "is live" line
+     is followed by a reload of this list, and used to be wiped instantly. */
+  if(m.dataset.kind==="load"){ m.textContent=""; m.dataset.kind=""; }
+  const rows=d.themes||[];
+  const live=rows.filter(r=>r.status==="live").length;
+  $("ctLiveCount").textContent=live+" of "+(d.live_limit||20)+" live";
+  table($("tblCustom"),["Theme","Status","Plays","Saved",""],rows,r=>{
+    const pill = r.status==="live" ? '<span class="pill live">Live</span>'
+               : r.status==="off"  ? '<span class="pill">Off</span>'
+               :                     '<span class="pill warn">Draft</span>';
+    const acts=[];
+    if(r.status==="live") acts.push('<button class="btn ghost sm" data-ct="off" data-id="'+r.id+'" type="button">Switch off</button>');
+    else acts.push('<button class="btn sm" data-ct="live" data-id="'+r.id+'" type="button">Activate</button>');
+    if(r.status!=="live" && !(r.plays>0))
+      acts.push('<button class="btn ghost sm" data-ct="del" data-id="'+r.id+'" type="button">Delete</button>');
+    const words=(r.words||[]).map(w=>"<div><b>"+esc(w.w)+"</b>"+esc(w.f||"")+"</div>").join("");
+    return "<tr data-name=\""+esc(r.name)+"\"><td><b>"+esc(r.name)+"</b>"+
+      "<details class='ctwords'><summary>"+esc(r.word_count)+" words</summary><div class='list'>"+words+"</div></details></td>"+
+      "<td>"+pill+"</td><td class='mono'>"+esc(r.plays)+"</td>"+
+      "<td class='mono'>"+esc(String(r.created_at||"").slice(0,10))+"</td>"+
+      "<td><div class='ctacts'>"+acts.join("")+"</div></td></tr>";
+  });
+}
+
+/* Listened for on the PANE, not on #tblCustom. table() replaces the table
+   element outright (outerHTML) when there are no rows, so a listener on the
+   table is left on a detached node the first time the list is empty - which
+   is exactly the first time anyone uses this: after uploading the first
+   theme, Activate and Delete did nothing until a reload. */
+$("paneCustom").addEventListener("click",async e=>{
+  const b=e.target.closest("#tblCustom button[data-ct]"); if(!b||b.disabled) return;
+  const id=Number(b.dataset.id), act=b.dataset.ct;
+  const name=(b.closest("tr")&&b.closest("tr").dataset.name)||"this theme";
+  const ask = act==="live" ? "Switch on “"+name+"”?\n\nThe Themes tab unlocks for every player on build "+CT_MIN_BUILD+" or later, straight away."
+            : act==="off"  ? "Switch off “"+name+"”?\n\nPlayers stop seeing it. Scores already played on it are kept."
+            :                "Delete “"+name+"” for good?\n\nThis cannot be undone.";
+  if(!confirm(ask)) return;
+  const m=$("mCtList"); m.className="msg"; m.textContent="Working…"; m.dataset.kind="act";
+  b.disabled=true;
+  try{
+    const res=await guard(act==="del"
+      ? await rpc("admin_custom_theme_delete",{p_token:TOKEN,p_id:id})
+      : await rpc("admin_custom_theme_set_status",{p_token:TOKEN,p_id:id,p_status:act}));
+    if(res&&res.ok){
+      m.className="msg ok";
+      m.textContent = act==="live" ? "“"+res.name+"” is live. "+res.live_now+" theme"+(res.live_now===1?"":"s")+" live now."
+                    : act==="off"  ? "“"+res.name+"” is switched off."
+                    :                "Deleted.";
+    }else{ m.textContent=ctServerErr(res); }
+  }catch(err){ if(err.message!=="expired") m.textContent=friendlyCt(err); }
+  loadCustomThemes();
+});
+
 </script>
 </body>
 </html>
