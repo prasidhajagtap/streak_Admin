@@ -14,7 +14,7 @@
 -- absent — Overview, Trends, Players, Themes and Settings all still render.
 --
 -- This does NOT touch public.dn_streak, which belongs to the game (sql/24 in
--- puzzle_abg1), not to the admin console. admin_streaks only called it.
+-- word_vibe), not to the admin console. admin_streaks only called it.
 --
 -- Nothing here touches a score.
 -- ============================================================================

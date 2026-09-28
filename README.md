@@ -1,11 +1,11 @@
 # Word Vibe — Admin console
 
-**The control room for [Word Vibe](https://prasidhajagtap.github.io/puzzle_abg1/),
+**The control room for [Word Vibe](https://prasidhajagtap.github.io/word_vibe/),
 a daily word-search game.**
 
 - **Open:** https://prasidhajagtap.github.io/streak_Admin/ (the capital **A**
   matters: GitHub Pages is case-sensitive, and the lower-case address shows a 404)
-- **The game:** [prasidhajagtap/puzzle_abg1](https://github.com/prasidhajagtap/puzzle_abg1)
+- **The game:** [prasidhajagtap/word_vibe](https://github.com/prasidhajagtap/word_vibe)
 
 Like the game, it is **one HTML file** with **no third-party scripts**, and it
 wears the game's look: the same dark palette and the same brush font. It reads
